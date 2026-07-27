@@ -36,6 +36,14 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         h1, h2, h3, h4 { margin-top: 0; }
@@ -156,12 +164,17 @@
             margin-bottom: 10px;
             position: relative;
         }
-        .leader-card img {
+        .leader-emoji {
+            font-size: 40px;
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            object-fit: cover;
             border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-dark);
+            flex-shrink: 0;
         }
         .leader-info h4 { margin: 0 0 5px 0; color: var(--accent); font-size: 1.1rem; }
         .leader-info p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
@@ -214,13 +227,17 @@
         }
         .role-badge.active { display: block; }
 
-        .missionary-card img {
+        .missionary-emoji {
+            font-size: 60px;
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            object-fit: cover;
             border: 3px solid var(--primary);
-            margin-bottom: 10px;
+            margin: 0 auto 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary);
         }
 
         /* Fun Dabloons */
@@ -326,20 +343,21 @@
             outline: none;
             border-color: var(--primary);
         }
-        .modal-content input[type="file"] {
-            background: var(--secondary);
-            padding: 8px;
-        }
         
         .admin-controls { display: none; margin-top: 15px; }
         .admin-mode .admin-controls { display: block; }
-
-        .file-upload-wrapper {
-            margin-top: 5px;
-            background: var(--bg-dark);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #444;
+        .admin-mode .admin-controls-inline { display: inline-block; }
+        .admin-controls-inline { display: none; }
+        
+        .list-item {
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
     </style>
 </head>
@@ -347,12 +365,16 @@
 
 <header>
     <h1>Zone Hub</h1>
-    <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
+    <div class="header-controls">
+        <button class="btn admin-controls-inline" id="exportBtn" onclick="exportJSON()" style="background: var(--secondary); color: white; border: 1px solid #444;">Export JSON</button>
+        <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
+    </div>
 </header>
 
 <nav>
     <button class="tab-btn active" onclick="switchTab(event, 'general')">General</button>
     <button class="tab-btn" onclick="switchTab(event, 'calendar')">Calendar</button>
+    <button class="tab-btn" onclick="switchTab(event, 'service')">Service Opportunities</button>
     <button class="tab-btn" onclick="switchTab(event, 'districts')">Districts</button>
     <button class="tab-btn" onclick="switchTab(event, 'companionships')">Companionships</button>
     <button class="tab-btn" onclick="switchTab(event, 'missionaries')">Missionaries</button>
@@ -368,7 +390,6 @@
             <div id="meetingsText" class="editable">Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM</div>
         </div>
         
-        <!-- Updated Leadership Profiles Card -->
         <div class="card">
             <h3 style="color: var(--accent);">Leadership & Advisors</h3>
             <div class="admin-controls" style="margin-bottom: 20px;">
@@ -392,6 +413,28 @@
             <button class="btn" onclick="addCalendarEvent()">+ Add Event</button>
         </div>
         <div id="calendarList" class="grid"></div>
+    </div>
+
+    <!-- Service Opportunities Tab -->
+    <div id="service" class="tab-content">
+        <h2>Service Opportunities</h2>
+        <div class="grid">
+            <div class="card">
+                <h3 style="color: var(--accent);">Approved Sites</h3>
+                <div class="admin-controls" style="margin-bottom: 15px;">
+                    <button class="btn" onclick="addSite()" style="background: var(--accent); color: black;">+ Add Site</button>
+                </div>
+                <div id="sitesList"></div>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
+                <div style="margin-bottom: 15px;">
+                    <button class="btn" onclick="addGathering()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
+                </div>
+                <div id="gatheringsList"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Districts Tab -->
@@ -440,7 +483,7 @@
     <!-- Missionaries Tab -->
     <div id="missionaries" class="tab-content">
         <h2>Missionary Profiles</h2>
-        <button class="btn admin-controls" onclick="openProfileModal()" style="margin-bottom: 25px; background: var(--accent); color: black;">+ Add New Missionary</button>
+        <button class="btn" onclick="openProfileModal()" style="margin-bottom: 25px; background: var(--accent); color: black;">+ Add New Missionary</button>
         <div id="missionaryList" class="grid"></div>
     </div>
 </main>
@@ -460,11 +503,8 @@
         <label>Phone Number</label>
         <input type="text" id="ldrPhone" placeholder="e.g. 555-0100">
         
-        <label>Profile Photo (Camera Roll)</label>
-        <div class="file-upload-wrapper">
-            <input type="file" id="ldrPhotoUpload" accept="image/*">
-        </div>
-        <input type="hidden" id="ldrPhotoBase64">
+        <label>Profile Emoji</label>
+        <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
 
         <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
             <button class="btn" onclick="saveLeader()" style="background: var(--primary);">Save Leader</button>
@@ -482,11 +522,8 @@
         <label>Name</label>
         <input type="text" id="profName" placeholder="e.g. Elder Smith">
         
-        <label>Profile Photo (Camera Roll)</label>
-        <div class="file-upload-wrapper">
-            <input type="file" id="profPhotoUpload" accept="image/*">
-        </div>
-        <input type="hidden" id="profPhotoBase64">
+        <label>Profile Emoji</label>
+        <input type="text" id="profEmoji" placeholder="Enter an emoji (e.g. 🚴‍♂️)" maxlength="5">
 
         <!-- Admin Only Role Selector -->
         <div id="roleSelectorDiv" style="display: none;">
@@ -517,29 +554,41 @@
         <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
             <button class="btn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
             <button class="btn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
-            <button class="btn admin-controls" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
+            <button class="btn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
         </div>
     </div>
 </div>
 
 <script>
+    // --- GIST CONFIGURATION ---
+    // Replace this URL with the Raw URL of your GitHub Gist containing the JSON data.
+    const GIST_RAW_URL = "https://gist.githubusercontent.com/PGMissionaries/a7fdba9001fbe1ef74e656bab41e6e71/raw/data.json"; 
+
     // App State
     let isAdmin = false;
     const PASSKEY = "100";
 
-    // Data Structure Initialization 
-    let appData = JSON.parse(localStorage.getItem('zoneHubDataV4')) || {
+    // Default Data Structure Structure
+    let appData = {
         general: {
             meetings: "Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM",
             leadership: [
-                { id: 1, role: "Service Mission Advisors", name: "Brother & Sister Smith", phone: "555-0101", photo: "" },
-                { id: 2, role: "Zone Leaders", name: "Elder Johnson & Elder Davis", phone: "555-0102", photo: "" }
+                { id: 1, role: "Service Mission Advisors", name: "Brother & Sister Smith", phone: "555-0101", emoji: "🧓" },
+                { id: 2, role: "Zone Leaders", name: "Elder Johnson & Elder Davis", phone: "555-0102", emoji: "👔" }
             ],
             customNotes: [] 
         },
         calendar: [
             { id: 1, date: "2026-08-15", title: "Zone Activity", desc: "Volleyball at the park.", color: "blue" }
         ],
+        service: {
+            sites: [
+                { id: 1, title: "Local Food Bank", desc: "Sort donations every Tuesday at 10 AM.", contact: "Jane Doe (555-1234)" }
+            ],
+            gatherings: [
+                { id: 1, title: "Zone Temple Trip", desc: "Carpooling from the stake center.", date: "Aug 20" }
+            ]
+        },
         districts: {
             d1: "<h4>District Leaders</h4><p>Elder Adams (555-1111)</p><h4>Sister Training Leaders</h4><p>Sister Brown (555-2222)</p><h4>Missionaries</h4><p>Elder Adams & Elder Clark<br>Sister Brown & Sister Evans</p>",
             d2: "<h4>District Leaders</h4><p>Elder Ford (555-3333)</p><h4>Sister Training Leaders</h4><p>Sister Garcia (555-4444)</p><h4>Missionaries</h4><p>Elder Ford & Elder Harris<br>Sister Garcia & Sister Hill</p>"
@@ -551,13 +600,65 @@
             { id: 4, names: "Sister Garcia & Sister Hill" }
         ],
         missionaries: [
-            { id: 1, name: "Elder Adams", photo: "", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", dabloons: 5 }
+            { id: 1, name: "Elder Adams", emoji: "🚲", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", dabloons: 5 }
         ]
     };
 
-    // Save Data
+    // Initialize App and Fetch Gist Data
+    async function initApp() {
+        const localData = localStorage.getItem('zoneHubDataV6');
+        if (localData) {
+            appData = JSON.parse(localData);
+        }
+
+        // Fetch the remote JSON if a URL is provided
+        if (GIST_RAW_URL) {
+            try {
+                const res = await fetch(GIST_RAW_URL);
+                const data = await res.json();
+                if (data) {
+                    appData = data;
+                    // Ensure service exists if pulling from an older gist structure
+                    if(!appData.service) appData.service = { sites: [], gatherings: [] };
+                    localStorage.setItem('zoneHubDataV6', JSON.stringify(appData));
+                }
+            } catch (err) {
+                console.error("Failed to fetch zone data from Gist:", err);
+            }
+        }
+        
+        renderApp();
+    }
+
+    // Export JSON to Clipboard (Admin Only)
+    function exportJSON() {
+        const dataString = JSON.stringify(appData, null, 2);
+        const btn = document.getElementById('exportBtn');
+        
+        const textArea = document.createElement("textarea");
+        textArea.value = dataString;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            btn.innerText = "Copied!";
+            btn.style.background = "#06D6A0";
+            btn.style.color = "#000";
+            setTimeout(() => {
+                btn.innerText = "Export JSON";
+                btn.style.background = "var(--secondary)";
+                btn.style.color = "white";
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy', err);
+            alert("Failed to copy JSON.");
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // Save Data (Locally)
     function saveData() {
-        localStorage.setItem('zoneHubDataV4', JSON.stringify(appData));
+        localStorage.setItem('zoneHubDataV6', JSON.stringify(appData));
         renderApp();
     }
 
@@ -628,10 +729,10 @@
         const leadersList = document.getElementById('leadersList');
         leadersList.innerHTML = '';
         (appData.general.leadership || []).forEach(ldr => {
-            const photoSrc = ldr.photo || 'https://via.placeholder.com/150/262626/ffffff?text=No+Photo';
+            const displayEmoji = ldr.emoji || '👤';
             leadersList.innerHTML += `
                 <div class="leader-card">
-                    <img src="${photoSrc}" alt="Photo">
+                    <div class="leader-emoji">${displayEmoji}</div>
                     <div class="leader-info">
                         <div class="role-title">${ldr.role}</div>
                         <h4>${ldr.name}</h4>
@@ -680,6 +781,36 @@
                 </div>`;
         });
 
+        // Service Tab - Sites
+        const sitesList = document.getElementById('sitesList');
+        sitesList.innerHTML = '';
+        (appData.service?.sites || []).forEach(site => {
+            sitesList.innerHTML += `
+                <div class="list-item">
+                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${site.title}</h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${site.desc}</p>
+                    <p style="margin:0; font-size: 0.85em; color:var(--text-muted);">📞 Contact: ${site.contact}</p>
+                    <div class="admin-controls">
+                        <button class="btn" onclick="deleteSite(${site.id})" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem; margin-top: 10px;">Delete Site</button>
+                    </div>
+                </div>`;
+        });
+
+        // Service Tab - Gatherings
+        const gatheringsList = document.getElementById('gatheringsList');
+        gatheringsList.innerHTML = '';
+        (appData.service?.gatherings || []).forEach(g => {
+            gatheringsList.innerHTML += `
+                <div class="list-item">
+                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${g.title}</h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:var(--primary-hover); font-weight: bold;">🗓️ ${g.date}</p>
+                    <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${g.desc}</p>
+                    <div>
+                        <button class="btn" onclick="deleteGathering(${g.id})" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
+                    </div>
+                </div>`;
+        });
+
         // Companionships
         const compList = document.getElementById('companionshipsList');
         compList.innerHTML = '';
@@ -698,12 +829,12 @@
         missList.innerHTML = '';
         appData.missionaries.forEach(m => {
             const roleBadge = m.role ? `<div class="role-badge active">${m.role}</div>` : '';
-            const photoSrc = m.photo || 'https://via.placeholder.com/150/262626/ffffff?text=No+Photo';
+            const displayEmoji = m.emoji || '👤';
             
             missList.innerHTML += `
                 <div class="missionary-card" id="miss-card-${m.id}">
                     ${roleBadge}
-                    <img src="${photoSrc}" alt="Photo">
+                    <div class="missionary-emoji">${displayEmoji}</div>
                     <h3>${m.name}</h3>
                     
                     <div class="dabloons-container">
@@ -734,8 +865,7 @@
         document.getElementById('ldrRole').value = "";
         document.getElementById('ldrName').value = "";
         document.getElementById('ldrPhone').value = "";
-        document.getElementById('ldrPhotoUpload').value = "";
-        document.getElementById('ldrPhotoBase64').value = "";
+        document.getElementById('ldrEmoji').value = "";
         document.getElementById('leaderModal').style.display = 'flex';
     }
 
@@ -750,7 +880,7 @@
             role: document.getElementById('ldrRole').value,
             name: document.getElementById('ldrName').value,
             phone: document.getElementById('ldrPhone').value,
-            photo: document.getElementById('ldrPhotoBase64').value
+            emoji: document.getElementById('ldrEmoji').value
         };
 
         if(!appData.general.leadership) appData.general.leadership = [];
@@ -762,6 +892,49 @@
     function deleteLeader(id) {
         if(confirm("Delete this leader?")) {
             appData.general.leadership = appData.general.leadership.filter(l => l.id !== id);
+            saveData();
+        }
+    }
+
+    // Service Opportunity Functions
+    function addSite() {
+        if (!isAdmin) return;
+        const title = prompt("Site Name (e.g. Local Food Bank):");
+        if (!title) return;
+        const desc = prompt("Site Description/Details:");
+        const contact = prompt("Contact Info:");
+        
+        if (!appData.service) appData.service = { sites: [], gatherings: [] };
+        if (!appData.service.sites) appData.service.sites = [];
+        
+        appData.service.sites.push({ id: Date.now(), title, desc, contact });
+        saveData();
+    }
+
+    function deleteSite(id) {
+        if (!isAdmin) return;
+        if(confirm("Delete this approved site?")) {
+            appData.service.sites = appData.service.sites.filter(s => s.id !== id);
+            saveData();
+        }
+    }
+
+    function addGathering() {
+        const title = prompt("Gathering/Idea Title:");
+        if (!title) return;
+        const date = prompt("Date or Timeline (e.g. Aug 20, or 'Every Friday'):");
+        const desc = prompt("Description & Details:");
+        
+        if (!appData.service) appData.service = { sites: [], gatherings: [] };
+        if (!appData.service.gatherings) appData.service.gatherings = [];
+        
+        appData.service.gatherings.push({ id: Date.now(), title, date, desc });
+        saveData();
+    }
+
+    function deleteGathering(id) {
+        if(confirm("Delete this gathering/idea?")) {
+            appData.service.gatherings = appData.service.gatherings.filter(g => g.id !== id);
             saveData();
         }
     }
@@ -849,48 +1022,18 @@
         }
     }
 
-    // Image Upload Resizer (Shared logic for both Modals)
-    function handleImageUpload(e, targetInputId) {
-        const file = e.target.files[0];
-        if(!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300; 
-                const scaleSize = MAX_WIDTH / img.width;
-                canvas.width = MAX_WIDTH;
-                canvas.height = img.height * scaleSize;
-                
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                const base64Str = canvas.toDataURL('image/jpeg', 0.8);
-                document.getElementById(targetInputId).value = base64Str;
-            }
-            img.src = event.target.result;
-        }
-        reader.readAsDataURL(file);
-    }
-
-    document.getElementById('profPhotoUpload').addEventListener('change', (e) => handleImageUpload(e, 'profPhotoBase64'));
-    document.getElementById('ldrPhotoUpload').addEventListener('change', (e) => handleImageUpload(e, 'ldrPhotoBase64'));
-
     // Profile Functions
     function openProfileModal(id = null) {
         const modal = document.getElementById('profileModal');
         
         document.getElementById('roleSelectorDiv').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('profPhotoUpload').value = ""; 
 
         if (id) {
             const m = appData.missionaries.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = "Edit Profile";
             document.getElementById('profId').value = m.id;
             document.getElementById('profName').value = m.name;
-            document.getElementById('profPhotoBase64').value = m.photo || "";
+            document.getElementById('profEmoji').value = m.emoji || "";
             document.getElementById('profRole').value = m.role || "";
             document.getElementById('profPhone').value = m.phone || "";
             document.getElementById('profSites').value = m.sites;
@@ -901,7 +1044,7 @@
             document.getElementById('modalTitle').innerText = "Add Missionary";
             document.getElementById('profId').value = "";
             document.getElementById('profName').value = "";
-            document.getElementById('profPhotoBase64').value = "";
+            document.getElementById('profEmoji').value = "";
             document.getElementById('profRole').value = "";
             document.getElementById('profPhone').value = "";
             document.getElementById('profSites').value = "";
@@ -921,7 +1064,7 @@
         const newProfile = {
             id: id ? parseInt(id) : Date.now(),
             name: document.getElementById('profName').value,
-            photo: document.getElementById('profPhotoBase64').value,
+            emoji: document.getElementById('profEmoji').value,
             role: document.getElementById('profRole').value,
             phone: document.getElementById('profPhone').value,
             sites: document.getElementById('profSites').value,
@@ -956,8 +1099,8 @@
         }
     }
 
-    // Initialize App
-    renderApp();
+    // Launch Application
+    initApp();
 
 </script>
 </body>
