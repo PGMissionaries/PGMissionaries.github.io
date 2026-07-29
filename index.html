@@ -27,6 +27,20 @@
             color: var(--text-main);
         }
 
+        /* --- Login Screen Styling --- */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        #appContent {
+            display: none; /* Hidden until password is correct */
+        }
+
         header {
             background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
             border-bottom: 2px solid var(--primary);
@@ -330,7 +344,7 @@
             font-weight: bold;
             font-size: 0.9rem;
         }
-        .modal-content input[type="text"], .modal-content select {
+        .modal-content input[type="text"], .modal-content input[type="password"], .modal-content select {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -414,254 +428,272 @@
 </head>
 <body>
 
-<header>
-    <h1>Zone Hub</h1>
-    <div class="header-controls">
-        <!-- The Save Updates button is now available to everyone -->
-        <button class="btn" id="exportBtn" onclick="saveToGitHub()" style="background: var(--secondary); color: white; border: 1px solid #444;">Save Updates</button>
-        <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="card" style="margin: 0; text-align: center; width: 90%; max-width: 350px;">
+        <h2 style="color: var(--primary); margin-bottom: 10px;">Zone Hub Login</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Please enter the site password to continue.</p>
+        <input type="password" id="sitePassword" placeholder="Password" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: var(--bg-dark); color: white; box-sizing: border-box; font-family: inherit;" onkeypress="if(event.key === 'Enter') checkSitePassword()">
+        <button class="btn" style="width: 100%;" onclick="checkSitePassword()">Enter Site</button>
     </div>
-</header>
+</div>
 
-<nav>
-    <button class="tab-btn active" onclick="switchTab(event, 'general')">General</button>
-    <button class="tab-btn" onclick="switchTab(event, 'calendar')">Calendar</button>
-    <button class="tab-btn" onclick="switchTab(event, 'service')">Service</button>
-    <button class="tab-btn" onclick="switchTab(event, 'resources')">Resources</button>
-    <button class="tab-btn" onclick="switchTab(event, 'districts')">Districts</button>
-    <button class="tab-btn" onclick="switchTab(event, 'companionships')">Companionships</button>
-    <button class="tab-btn" onclick="switchTab(event, 'missionaries')">Missionaries</button>
-</nav>
-
-<main>
-    <!-- General Info Tab -->
-    <div id="general" class="tab-content active">
-        <h2>General Information</h2>
-        
-        <div class="card">
-            <h3 style="color: var(--accent);">Regular Meetings</h3>
-            <div id="meetingsText" class="editable">Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM</div>
+<!-- Main App Content (Hidden until logged in) -->
+<div id="appContent">
+    <header>
+        <h1>Zone Hub</h1>
+        <div class="header-controls">
+            <!-- The Save Updates button is now available to everyone -->
+            <button class="btn" id="exportBtn" onclick="saveToGitHub()" style="background: var(--secondary); color: white; border: 1px solid #444;">Save Updates</button>
+            <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
         </div>
-        
-        <div class="card">
-            <h3 style="color: var(--accent);">Leadership & Advisors</h3>
+    </header>
+
+    <nav>
+        <button class="tab-btn active" onclick="switchTab(event, 'general')">General</button>
+        <button class="tab-btn" onclick="switchTab(event, 'calendar')">Calendar</button>
+        <button class="tab-btn" onclick="switchTab(event, 'service')">Service</button>
+        <button class="tab-btn" onclick="switchTab(event, 'resources')">Resources</button>
+        <button class="tab-btn" onclick="switchTab(event, 'districts')">Districts</button>
+        <button class="tab-btn" onclick="switchTab(event, 'companionships')">Companionships</button>
+        <button class="tab-btn" onclick="switchTab(event, 'missionaries')">Missionaries</button>
+    </nav>
+
+    <main>
+        <!-- General Info Tab -->
+        <div id="general" class="tab-content active">
+            <h2>General Information</h2>
+            
+            <div class="card">
+                <h3 style="color: var(--accent);">Regular Meetings</h3>
+                <div id="meetingsText" class="editable">Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM</div>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: var(--accent);">Leadership & Advisors</h3>
+                <div class="admin-controls" style="margin-bottom: 20px;">
+                    <button class="btn" style="background: var(--accent);" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+                </div>
+                <div id="leadersList"></div>
+            </div>
+
+            <div class="admin-controls" style="margin: 30px 0 15px 0;">
+                <button class="btn" style="background: var(--accent);" onclick="addGeneralNote()">+ Add New Note Section</button>
+            </div>
+            
+            <!-- Dynamic General Notes Container -->
+            <div id="generalNotesContainer"></div>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <h2>Zone Calendar</h2>
             <div class="admin-controls" style="margin-bottom: 20px;">
-                <button class="btn" style="background: var(--accent);" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+                <button class="btn" onclick="addCalendarEvent()">+ Add Event</button>
             </div>
-            <div id="leadersList"></div>
+            <div id="calendarList" class="grid"></div>
         </div>
 
-        <div class="admin-controls" style="margin: 30px 0 15px 0;">
-            <button class="btn" style="background: var(--accent);" onclick="addGeneralNote()">+ Add New Note Section</button>
-        </div>
-        
-        <!-- Dynamic General Notes Container -->
-        <div id="generalNotesContainer"></div>
-    </div>
-
-    <!-- Calendar Tab -->
-    <div id="calendar" class="tab-content">
-        <h2>Zone Calendar</h2>
-        <div class="admin-controls" style="margin-bottom: 20px;">
-            <button class="btn" onclick="addCalendarEvent()">+ Add Event</button>
-        </div>
-        <div id="calendarList" class="grid"></div>
-    </div>
-
-    <!-- Service Opportunities Tab -->
-    <div id="service" class="tab-content">
-        <h2>Service Opportunities</h2>
-        <div class="grid">
-            <div class="card">
-                <h3 style="color: var(--accent);">Approved Sites</h3>
-                <div class="admin-controls" style="margin-bottom: 15px;">
-                    <button class="btn" onclick="addSite()" style="background: var(--accent); color: black;">+ Add Site</button>
+        <!-- Service Opportunities Tab -->
+        <div id="service" class="tab-content">
+            <h2>Service Opportunities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3 style="color: var(--accent);">Approved Sites</h3>
+                    <div class="admin-controls" style="margin-bottom: 15px;">
+                        <button class="btn" onclick="addSite()" style="background: var(--accent); color: black;">+ Add Site</button>
+                    </div>
+                    <div id="sitesList"></div>
                 </div>
-                <div id="sitesList"></div>
+                
+                <div class="card">
+                    <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
+                    <div style="margin-bottom: 15px;">
+                        <!-- Available to everyone -->
+                        <button class="btn" onclick="openGatheringModal()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
+                    </div>
+                    <div id="gatheringsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Tab -->
+        <div id="resources" class="tab-content">
+            <h2>Zone Documents & Resources</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Click to view or download important zone documents.</p>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="addResource()" style="background: var(--accent); color: black;">+ Add Document Link</button>
+            </div>
+            <div id="resourcesList" class="grid"></div>
+        </div>
+
+        <!-- Districts Tab -->
+        <div id="districts" class="tab-content">
+            <h2>Districts</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3 style="color: var(--accent);">District 1</h3>
+                    <div id="district1Text" class="editable">
+                        <h4>District Leaders</h4>
+                        <p>Elder Adams (555-1111)</p>
+                        
+                        <h4>Sister Training Leaders</h4>
+                        <p>Sister Brown (555-2222)</p>
+                        
+                        <h4>Missionaries</h4>
+                        <p>Elder Adams & Elder Clark<br>Sister Brown & Sister Evans</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="color: var(--accent);">District 2</h3>
+                    <div id="district2Text" class="editable">
+                        <h4>District Leaders</h4>
+                        <p>Elder Ford (555-3333)</p>
+                        
+                        <h4>Sister Training Leaders</h4>
+                        <p>Sister Garcia (555-4444)</p>
+                        
+                        <h4>Missionaries</h4>
+                        <p>Elder Ford & Elder Harris<br>Sister Garcia & Sister Hill</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Companionships Tab -->
+        <div id="companionships" class="tab-content">
+            <h2>Companionships</h2>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
             </div>
             
-            <div class="card">
-                <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
-                <div style="margin-bottom: 15px;">
-                    <!-- Available to everyone -->
-                    <button class="btn" onclick="openGatheringModal()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
-                </div>
-                <div id="gatheringsList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resources Tab -->
-    <div id="resources" class="tab-content">
-        <h2>Zone Documents & Resources</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Click to view or download important zone documents.</p>
-        <div class="admin-controls" style="margin-bottom: 20px;">
-            <button class="btn" onclick="addResource()" style="background: var(--accent); color: black;">+ Add Document Link</button>
-        </div>
-        <div id="resourcesList" class="grid"></div>
-    </div>
-
-    <!-- Districts Tab -->
-    <div id="districts" class="tab-content">
-        <h2>Districts</h2>
-        <div class="grid">
-            <div class="card">
-                <h3 style="color: var(--accent);">District 1</h3>
-                <div id="district1Text" class="editable">
-                    <h4>District Leaders</h4>
-                    <p>Elder Adams (555-1111)</p>
-                    
-                    <h4>Sister Training Leaders</h4>
-                    <p>Sister Brown (555-2222)</p>
-                    
-                    <h4>Missionaries</h4>
-                    <p>Elder Adams & Elder Clark<br>Sister Brown & Sister Evans</p>
-                </div>
-            </div>
+            <!-- Search Input -->
+            <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
             
-            <div class="card">
-                <h3 style="color: var(--accent);">District 2</h3>
-                <div id="district2Text" class="editable">
-                    <h4>District Leaders</h4>
-                    <p>Elder Ford (555-3333)</p>
-                    
-                    <h4>Sister Training Leaders</h4>
-                    <p>Sister Garcia (555-4444)</p>
-                    
-                    <h4>Missionaries</h4>
-                    <p>Elder Ford & Elder Harris<br>Sister Garcia & Sister Hill</p>
-                </div>
+            <div id="companionshipsList" class="grid"></div>
+        </div>
+
+        <!-- Missionaries Tab -->
+        <div id="missionaries" class="tab-content">
+            <h2>Missionary Profiles</h2>
+            <!-- Available to everyone -->
+            <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
+            
+            <!-- Search Input -->
+            <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
+            
+            <div id="missionaryList" class="grid"></div>
+        </div>
+    </main>
+
+    <!-- Leader Modal -->
+    <div id="leaderModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--accent); margin-top:0;">Edit Leader/Advisor</h2>
+            <input type="hidden" id="ldrId">
+            
+            <label>Role / Title</label>
+            <input type="text" id="ldrRole" placeholder="e.g. Zone Leaders, Service Advisors">
+            
+            <label>Name(s)</label>
+            <input type="text" id="ldrName" placeholder="e.g. Elder Smith & Elder Jones">
+            
+            <label>Phone Number</label>
+            <input type="text" id="ldrPhone" placeholder="e.g. 555-0100">
+            
+            <label>Profile Emoji</label>
+            <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveLeader()" style="background: var(--primary);">Save Leader</button>
+                <button class="btn" onclick="closeLeaderModal()" style="background: var(--secondary); color: white;">Cancel</button>
             </div>
         </div>
     </div>
 
-    <!-- Companionships Tab -->
-    <div id="companionships" class="tab-content">
-        <h2>Companionships</h2>
-        <div class="admin-controls" style="margin-bottom: 20px;">
-            <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
-        </div>
-        
-        <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
-        
-        <div id="companionshipsList" class="grid"></div>
-    </div>
+    <!-- Gathering Modal -->
+    <div id="gatheringModal" class="modal">
+        <div class="modal-content">
+            <h2 id="gatheringModalTitle" style="color: var(--accent); margin-top:0;">Edit Gathering / Idea</h2>
+            <input type="hidden" id="gathId">
+            
+            <label>Title</label>
+            <input type="text" id="gathTitle" placeholder="e.g. Zone Temple Trip">
+            
+            <label>Date or Timeline</label>
+            <input type="text" id="gathDate" placeholder="e.g. Aug 20, or 'Every Friday'">
+            
+            <label>Description & Details</label>
+            <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
+            
+            <label>Emoji</label>
+            <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
 
-    <!-- Missionaries Tab -->
-    <div id="missionaries" class="tab-content">
-        <h2>Missionary Profiles</h2>
-        <!-- Available to everyone -->
-        <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
-        
-        <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
-        
-        <div id="missionaryList" class="grid"></div>
-    </div>
-</main>
+            <label>Theme Color</label>
+            <input type="color" id="gathColor" value="#d4af37">
 
-<!-- Leader Modal -->
-<div id="leaderModal" class="modal">
-    <div class="modal-content">
-        <h2 style="color: var(--accent); margin-top:0;">Edit Leader/Advisor</h2>
-        <input type="hidden" id="ldrId">
-        
-        <label>Role / Title</label>
-        <input type="text" id="ldrRole" placeholder="e.g. Zone Leaders, Service Advisors">
-        
-        <label>Name(s)</label>
-        <input type="text" id="ldrName" placeholder="e.g. Elder Smith & Elder Jones">
-        
-        <label>Phone Number</label>
-        <input type="text" id="ldrPhone" placeholder="e.g. 555-0100">
-        
-        <label>Profile Emoji</label>
-        <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
-
-        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn" onclick="saveLeader()" style="background: var(--primary);">Save Leader</button>
-            <button class="btn" onclick="closeLeaderModal()" style="background: var(--secondary); color: white;">Cancel</button>
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveGathering()" style="background: var(--primary);">Save Gathering</button>
+                <button class="btn" onclick="closeGatheringModal()" style="background: var(--secondary); color: white;">Cancel</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Gathering Modal -->
-<div id="gatheringModal" class="modal">
-    <div class="modal-content">
-        <h2 id="gatheringModalTitle" style="color: var(--accent); margin-top:0;">Edit Gathering / Idea</h2>
-        <input type="hidden" id="gathId">
-        
-        <label>Title</label>
-        <input type="text" id="gathTitle" placeholder="e.g. Zone Temple Trip">
-        
-        <label>Date or Timeline</label>
-        <input type="text" id="gathDate" placeholder="e.g. Aug 20, or 'Every Friday'">
-        
-        <label>Description & Details</label>
-        <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
-        
-        <label>Emoji</label>
-        <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="color: var(--accent); margin-top:0;">Edit Profile</h2>
+            <input type="hidden" id="profId">
+            
+            <label>Name</label>
+            <input type="text" id="profName" placeholder="e.g. Elder Smith">
+            
+            <label>Profile Emoji</label>
+            <input type="text" id="profEmoji" placeholder="Enter an emoji (e.g. 🚴‍♂️)" maxlength="5">
 
-        <label>Theme Color</label>
-        <input type="color" id="gathColor" value="#d4af37">
+            <label>Theme Color</label>
+            <input type="color" id="profColor" value="#d4af37">
 
-        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn" onclick="saveGathering()" style="background: var(--primary);">Save Gathering</button>
-            <button class="btn" onclick="closeGatheringModal()" style="background: var(--secondary); color: white;">Cancel</button>
+            <!-- Admin Only Role Selector -->
+            <div id="roleSelectorDiv" style="display: none;">
+                <label>Zone Service Assignment (Admin Only)</label>
+                <select id="profRole">
+                    <option value="">None</option>
+                    <option value="DL">District Leader</option>
+                    <option value="STL">Sister Training Leader</option>
+                    <option value="ZL">Zone Leader</option>
+                </select>
+            </div>
+
+            <label>Phone Number</label>
+            <input type="text" id="profPhone" placeholder="e.g. 555-0199">
+
+            <label>Service Sites</label>
+            <input type="text" id="profSites" placeholder="Where do you serve?">
+            
+            <label>Birthday</label>
+            <input type="text" id="profBirthday" placeholder="e.g. October 24">
+            
+            <label>Companion</label>
+            <input type="text" id="profCompanion" placeholder="Current Companion">
+            
+            <label>District</label>
+            <input type="text" id="profDistrict" placeholder="Which District?">
+            
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
+                <button class="btn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
+                <button class="btn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Profile Modal -->
-<div id="profileModal" class="modal">
-    <div class="modal-content">
-        <h2 id="modalTitle" style="color: var(--accent); margin-top:0;">Edit Profile</h2>
-        <input type="hidden" id="profId">
-        
-        <label>Name</label>
-        <input type="text" id="profName" placeholder="e.g. Elder Smith">
-        
-        <label>Profile Emoji</label>
-        <input type="text" id="profEmoji" placeholder="Enter an emoji (e.g. 🚴‍♂️)" maxlength="5">
-
-        <label>Theme Color</label>
-        <input type="color" id="profColor" value="#d4af37">
-
-        <!-- Admin Only Role Selector -->
-        <div id="roleSelectorDiv" style="display: none;">
-            <label>Zone Service Assignment (Admin Only)</label>
-            <select id="profRole">
-                <option value="">None</option>
-                <option value="DL">District Leader</option>
-                <option value="STL">Sister Training Leader</option>
-                <option value="ZL">Zone Leader</option>
-            </select>
-        </div>
-
-        <label>Phone Number</label>
-        <input type="text" id="profPhone" placeholder="e.g. 555-0199">
-
-        <label>Service Sites</label>
-        <input type="text" id="profSites" placeholder="Where do you serve?">
-        
-        <label>Birthday</label>
-        <input type="text" id="profBirthday" placeholder="e.g. October 24">
-        
-        <label>Companion</label>
-        <input type="text" id="profCompanion" placeholder="Current Companion">
-        
-        <label>District</label>
-        <input type="text" id="profDistrict" placeholder="Which District?">
-        
-        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
-            <button class="btn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
-            <button class="btn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
-        </div>
-    </div>
-</div>
+</div> <!-- End of App Content -->
 
 <script>
+    // --- SITE PASSWORD ---
+    const SITE_PASSWORD = "service123!";
+
     // --- GIST CONFIGURATION ---
     const GIST_RAW_URL = "https://gist.githubusercontent.com/PGMissionaries/a7fdba9001fbe1ef74e656bab41e6e71/raw/data.json"; 
     const GIST_ID = "a7fdba9001fbe1ef74e656bab41e6e71";
@@ -716,6 +748,19 @@
             { id: 1, name: "Elder Adams", emoji: "🚲", color: "#d4af37", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", dabloons: 5 }
         ]
     };
+
+    // Global Login Check
+    function checkSitePassword() {
+        const pwd = document.getElementById('sitePassword').value;
+        if (pwd === SITE_PASSWORD) {
+            sessionStorage.setItem('zoneHubAccess', 'granted');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+            initApp();
+        } else {
+            alert("Incorrect Password.");
+        }
+    }
 
     // Initialize App and Fetch Gist Data
     async function initApp() {
@@ -1359,8 +1404,14 @@
         }
     }
 
-    // Launch Application
-    initApp();
+    // --- On Load Execution ---
+    window.onload = function() {
+        if (sessionStorage.getItem('zoneHubAccess') === 'granted') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+            initApp();
+        }
+    };
 
 </script>
 </body>
