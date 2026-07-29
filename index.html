@@ -210,6 +210,7 @@
             text-align: center;
             position: relative;
             border: 1px solid #333;
+            transition: all 0.3s;
         }
         
         .role-badge {
@@ -238,6 +239,7 @@
             align-items: center;
             justify-content: center;
             background: var(--secondary);
+            transition: all 0.3s;
         }
 
         /* Fun Dabloons */
@@ -328,7 +330,7 @@
             font-weight: bold;
             font-size: 0.9rem;
         }
-        .modal-content input, .modal-content select {
+        .modal-content input[type="text"], .modal-content select {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -338,6 +340,16 @@
             color: white;
             box-sizing: border-box;
             font-family: inherit;
+        }
+        .modal-content input[type="color"] {
+            width: 100%;
+            height: 45px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: var(--bg-dark);
+            cursor: pointer;
+            padding: 2px;
         }
         .modal-content input:focus {
             outline: none;
@@ -353,6 +365,7 @@
             border-bottom: 1px solid #333;
             padding-bottom: 15px;
             margin-bottom: 15px;
+            transition: all 0.2s;
         }
         .list-item:last-child {
             border-bottom: none;
@@ -404,7 +417,8 @@
 <header>
     <h1>Zone Hub</h1>
     <div class="header-controls">
-        <button class="btn admin-controls-inline" id="exportBtn" onclick="saveToGitHub()" style="background: var(--secondary); color: white; border: 1px solid #444;">Save Updates</button>
+        <!-- The Save Updates button is now available to everyone -->
+        <button class="btn" id="exportBtn" onclick="saveToGitHub()" style="background: var(--secondary); color: white; border: 1px solid #444;">Save Updates</button>
         <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
     </div>
 </header>
@@ -469,7 +483,8 @@
             <div class="card">
                 <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
                 <div style="margin-bottom: 15px;">
-                    <button class="btn" onclick="addGathering()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
+                    <!-- Available to everyone -->
+                    <button class="btn" onclick="openGatheringModal()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
                 </div>
                 <div id="gatheringsList"></div>
             </div>
@@ -527,7 +542,6 @@
             <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
         </div>
         
-        <!-- Search Input -->
         <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
         
         <div id="companionshipsList" class="grid"></div>
@@ -536,16 +550,16 @@
     <!-- Missionaries Tab -->
     <div id="missionaries" class="tab-content">
         <h2>Missionary Profiles</h2>
+        <!-- Available to everyone -->
         <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
         
-        <!-- Search Input -->
         <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
         
         <div id="missionaryList" class="grid"></div>
     </div>
 </main>
 
-<!-- Simple Leader Modal -->
+<!-- Leader Modal -->
 <div id="leaderModal" class="modal">
     <div class="modal-content">
         <h2 style="color: var(--accent); margin-top:0;">Edit Leader/Advisor</h2>
@@ -570,6 +584,34 @@
     </div>
 </div>
 
+<!-- Gathering Modal -->
+<div id="gatheringModal" class="modal">
+    <div class="modal-content">
+        <h2 id="gatheringModalTitle" style="color: var(--accent); margin-top:0;">Edit Gathering / Idea</h2>
+        <input type="hidden" id="gathId">
+        
+        <label>Title</label>
+        <input type="text" id="gathTitle" placeholder="e.g. Zone Temple Trip">
+        
+        <label>Date or Timeline</label>
+        <input type="text" id="gathDate" placeholder="e.g. Aug 20, or 'Every Friday'">
+        
+        <label>Description & Details</label>
+        <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
+        
+        <label>Emoji</label>
+        <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
+
+        <label>Theme Color</label>
+        <input type="color" id="gathColor" value="#d4af37">
+
+        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn" onclick="saveGathering()" style="background: var(--primary);">Save Gathering</button>
+            <button class="btn" onclick="closeGatheringModal()" style="background: var(--secondary); color: white;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Profile Modal -->
 <div id="profileModal" class="modal">
     <div class="modal-content">
@@ -581,6 +623,9 @@
         
         <label>Profile Emoji</label>
         <input type="text" id="profEmoji" placeholder="Enter an emoji (e.g. 🚴‍♂️)" maxlength="5">
+
+        <label>Theme Color</label>
+        <input type="color" id="profColor" value="#d4af37">
 
         <!-- Admin Only Role Selector -->
         <div id="roleSelectorDiv" style="display: none;">
@@ -651,11 +696,10 @@
                 { id: 1, title: "Local Food Bank", desc: "Sort donations every Tuesday at 10 AM.", contact: "Jane Doe (555-1234)" }
             ],
             gatherings: [
-                { id: 1, title: "Zone Temple Trip", desc: "Carpooling from the stake center.", date: "Aug 20" }
+                { id: 1, title: "Zone Temple Trip", desc: "Carpooling from the stake center.", date: "Aug 20", emoji: "🛕", color: "#d4af37" }
             ]
         },
         resources: [
-            // Example resource link
             { id: 1, title: "Zone Boundaries Map", url: "#" }
         ],
         districts: {
@@ -669,13 +713,13 @@
             { id: 4, names: "Sister Garcia & Sister Hill" }
         ],
         missionaries: [
-            { id: 1, name: "Elder Adams", emoji: "🚲", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", dabloons: 5 }
+            { id: 1, name: "Elder Adams", emoji: "🚲", color: "#d4af37", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", dabloons: 5 }
         ]
     };
 
     // Initialize App and Fetch Gist Data
     async function initApp() {
-        const localData = localStorage.getItem('zoneHubDataV7');
+        const localData = localStorage.getItem('zoneHubDataV8');
         if (localData) {
             appData = JSON.parse(localData);
         }
@@ -691,7 +735,7 @@
                     appData = data;
                     if(!appData.service) appData.service = { sites: [], gatherings: [] };
                     if(!appData.resources) appData.resources = [];
-                    localStorage.setItem('zoneHubDataV7', JSON.stringify(appData));
+                    localStorage.setItem('zoneHubDataV8', JSON.stringify(appData));
                 }
             } catch (err) {
                 console.error("Failed to fetch zone data from Gist:", err);
@@ -701,7 +745,7 @@
         renderApp();
     }
 
-    // Auto-Save to GitHub API (Admin Only) - Using Hardcoded Token
+    // Auto-Save to GitHub API (Available to everyone)
     async function saveToGitHub() {
         const btn = document.getElementById('exportBtn');
         const originalText = btn.innerText;
@@ -750,7 +794,7 @@
 
     // Save Data (Locally for immediate render)
     function saveData() {
-        localStorage.setItem('zoneHubDataV7', JSON.stringify(appData));
+        localStorage.setItem('zoneHubDataV8', JSON.stringify(appData));
         renderApp();
     }
 
@@ -892,12 +936,18 @@
         const gatheringsList = document.getElementById('gatheringsList');
         gatheringsList.innerHTML = '';
         (appData.service?.gatherings || []).forEach(g => {
+            const gColor = g.color || 'var(--primary)';
+            const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${g.emoji}</span>` : '';
+            
             gatheringsList.innerHTML += `
-                <div class="list-item">
-                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${g.title}</h4>
-                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:var(--primary-hover); font-weight: bold;">🗓️ ${g.date}</p>
+                <div class="list-item" style="border-left: 4px solid ${gColor}; padding-left: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;">
+                    <h4 style="color:var(--accent); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
+                        ${gEmoji} ${g.title}
+                    </h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${gColor}; font-weight: bold;">🗓️ ${g.date}</p>
                     <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${g.desc}</p>
-                    <div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn" onclick="openGatheringModal(${g.id})" style="background:var(--secondary); color:white; padding: 4px 10px; font-size: 0.8rem; border: 1px solid #444;">Edit Idea</button>
                         <button class="btn" onclick="deleteGathering(${g.id})" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
                     </div>
                 </div>`;
@@ -936,11 +986,12 @@
         appData.missionaries.forEach(m => {
             const roleBadge = m.role ? `<div class="role-badge active">${m.role}</div>` : '';
             const displayEmoji = m.emoji || '👤';
+            const mColor = m.color || 'var(--primary)';
             
             missList.innerHTML += `
-                <div class="missionary-card" id="miss-card-${m.id}">
+                <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${mColor};">
                     ${roleBadge}
-                    <div class="missionary-emoji">${displayEmoji}</div>
+                    <div class="missionary-emoji" style="border-color: ${mColor};">${displayEmoji}</div>
                     <h3 class="missionary-name">${m.name}</h3>
                     
                     <div class="dabloons-container">
@@ -1084,17 +1135,58 @@
         }
     }
 
-    function addGathering() {
-        const title = prompt("Gathering/Idea Title:");
-        if (!title) return;
-        const date = prompt("Date or Timeline (e.g. Aug 20, or 'Every Friday'):");
-        const desc = prompt("Description & Details:");
+    // Gathering Modal Functions
+    function openGatheringModal(id = null) {
+        const modal = document.getElementById('gatheringModal');
         
+        if (id) {
+            const g = appData.service.gatherings.find(x => x.id === id);
+            document.getElementById('gatheringModalTitle').innerText = "Edit Gathering / Idea";
+            document.getElementById('gathId').value = g.id;
+            document.getElementById('gathTitle').value = g.title;
+            document.getElementById('gathDate').value = g.date;
+            document.getElementById('gathDesc').value = g.desc;
+            document.getElementById('gathEmoji').value = g.emoji || "";
+            document.getElementById('gathColor').value = g.color || "#d4af37";
+        } else {
+            document.getElementById('gatheringModalTitle').innerText = "Add Gathering / Idea";
+            document.getElementById('gathId').value = "";
+            document.getElementById('gathTitle').value = "";
+            document.getElementById('gathDate').value = "";
+            document.getElementById('gathDesc').value = "";
+            document.getElementById('gathEmoji').value = "";
+            document.getElementById('gathColor').value = "#d4af37";
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeGatheringModal() {
+        document.getElementById('gatheringModal').style.display = 'none';
+    }
+
+    function saveGathering() {
+        const id = document.getElementById('gathId').value;
+        const newGathering = {
+            id: id ? parseInt(id) : Date.now(),
+            title: document.getElementById('gathTitle').value,
+            date: document.getElementById('gathDate').value,
+            desc: document.getElementById('gathDesc').value,
+            emoji: document.getElementById('gathEmoji').value,
+            color: document.getElementById('gathColor').value
+        };
+
         if (!appData.service) appData.service = { sites: [], gatherings: [] };
         if (!appData.service.gatherings) appData.service.gatherings = [];
+
+        if (id) {
+            const index = appData.service.gatherings.findIndex(g => g.id === parseInt(id));
+            appData.service.gatherings[index] = newGathering;
+        } else {
+            appData.service.gatherings.push(newGathering);
+        }
         
-        appData.service.gatherings.push({ id: Date.now(), title, date, desc });
         saveData();
+        closeGatheringModal();
     }
 
     function deleteGathering(id) {
@@ -1199,6 +1291,7 @@
             document.getElementById('profId').value = m.id;
             document.getElementById('profName').value = m.name;
             document.getElementById('profEmoji').value = m.emoji || "";
+            document.getElementById('profColor').value = m.color || "#d4af37";
             document.getElementById('profRole').value = m.role || "";
             document.getElementById('profPhone').value = m.phone || "";
             document.getElementById('profSites').value = m.sites;
@@ -1210,6 +1303,7 @@
             document.getElementById('profId').value = "";
             document.getElementById('profName').value = "";
             document.getElementById('profEmoji').value = "";
+            document.getElementById('profColor').value = "#d4af37";
             document.getElementById('profRole').value = "";
             document.getElementById('profPhone').value = "";
             document.getElementById('profSites').value = "";
@@ -1230,6 +1324,7 @@
             id: id ? parseInt(id) : Date.now(),
             name: document.getElementById('profName').value,
             emoji: document.getElementById('profEmoji').value,
+            color: document.getElementById('profColor').value,
             role: document.getElementById('profRole').value,
             phone: document.getElementById('profPhone').value,
             sites: document.getElementById('profSites').value,
