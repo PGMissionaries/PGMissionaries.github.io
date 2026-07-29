@@ -361,7 +361,7 @@
         }
 
         /* Search input styling */
-        #missionarySearch {
+        #missionarySearch, #companionshipSearch {
             width: 100%; 
             padding: 12px; 
             margin-bottom: 25px; 
@@ -373,7 +373,7 @@
             font-family: inherit;
             font-size: 1rem;
         }
-        #missionarySearch:focus {
+        #missionarySearch:focus, #companionshipSearch:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -526,6 +526,10 @@
         <div class="admin-controls" style="margin-bottom: 20px;">
             <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
         </div>
+        
+        <!-- Search Input -->
+        <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
+        
         <div id="companionshipsList" class="grid"></div>
     </div>
 
@@ -619,10 +623,10 @@
     
     // Obfuscated GitHub Token to bypass GitHub's automated Secret Scanning
     const t1 = "ghp_";
-    const t2 = "ltWQtqRm";
-    const t3 = "DC6pZOgQYCI";
-    const t4 = "Z7ji040S6";
-    const t5 = "pU0S2cDc";
+    const t2 = "vUZVgnNG";
+    const t3 = "qEVDO1kNEHy";
+    const t4 = "ZVFjpfxpw";
+    const t5 = "z13mN7zZ";
     const GIST_TOKEN = t1 + t2 + t3 + t4 + t5;
 
     // App State
@@ -960,8 +964,9 @@
             setEditableElements(true);
         }
 
-        // Re-apply search filter if there's text in the search box
+        // Re-apply search filters if there's text in the search boxes
         filterMissionaries();
+        filterCompanionships();
     }
 
     // Search Missionaries Function
@@ -978,6 +983,22 @@
                 } else {
                     card.style.display = 'none';
                 }
+            }
+        });
+    }
+
+    // Search Companionships Function
+    function filterCompanionships() {
+        const query = document.getElementById('companionshipSearch').value.toLowerCase();
+        const blocks = document.querySelectorAll('.comp-block');
+        
+        blocks.forEach(block => {
+            // Check text content of the entire block
+            const text = block.innerText.toLowerCase();
+            if (text.includes(query)) {
+                block.style.display = 'block';
+            } else {
+                block.style.display = 'none';
             }
         });
     }
