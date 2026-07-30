@@ -436,6 +436,23 @@
             border-color: var(--primary);
             color: var(--primary);
         }
+        
+        /* RSVP Styling */
+        .rsvp-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.08);
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin: 3px 4px 3px 0;
+            font-size: 0.85em;
+            border: 1px solid #444;
+        }
+        .rsvp-remove {
+            cursor: pointer;
+            color: var(--danger);
+            margin-left: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -733,7 +750,7 @@
             customNotes: [] 
         },
         calendar: [
-            { id: 1, date: "2026-08-15", title: "Zone Activity", desc: "Volleyball at the park.", color: "blue" }
+            { id: 1, date: "2026-08-15", title: "Zone Activity", desc: "Volleyball at the park.", color: "blue", rsvps: [] }
         ],
         service: {
             sites: [
@@ -776,7 +793,7 @@
 
     // Initialize App and Fetch Gist Data
     async function initApp() {
-        const localData = localStorage.getItem('zoneHubDataV9');
+        const localData = localStorage.getItem('zoneHubDataV10');
         if (localData) {
             appData = JSON.parse(localData);
         }
@@ -792,9 +809,12 @@
                     appData = data;
                     if(!appData.service) appData.service = { sites: [], gatherings: [] };
                     if(!appData.resources) appData.resources = [];
-                    // Ensure older data fields safely migrate if needed
+                    
+                    // Safely migrate older fields
                     appData.missionaries.forEach(m => { if(m.cookies === undefined) m.cookies = m.dabloons || 0; });
-                    localStorage.setItem('zoneHubDataV9', JSON.stringify(appData));
+                    appData.calendar.forEach(e => { if(!e.rsvps) e.rsvps = []; });
+                    
+                    localStorage.setItem('zoneHubDataV10', JSON.stringify(appData));
                 }
             } catch (err) {
                 console.error("Failed to fetch zone data from Gist:", err);
@@ -853,7 +873,7 @@
 
     // Save Data (Locally for immediate render)
     function saveData() {
-        localStorage.setItem('zoneHubDataV9', JSON.stringify(appData));
+        localStorage.setItem('zoneHubDataV10', JSON.stringify(appData));
         renderApp();
     }
 
@@ -965,13 +985,31 @@
             const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : '';
             const borderStyle = ev.color ? `border-left-color: ${ev.color};` : '';
 
+            const rsvps = ev.rsvps || [];
+            const rsvpCount = rsvps.length;
+            const rsvpHtml = rsvpCount > 0 
+                ? rsvps.map((name, idx) => `<span class="rsvp-badge">${name} <span class="rsvp-remove" onclick="removeRsvp(${ev.id}, ${idx})">&times;</span></span>`).join('') 
+                : 'None yet.';
+
             calList.innerHTML += `
                 <div class="card" style="${borderStyle}">
                     <h3 style="color:var(--primary); margin-bottom: 10px;">${ev.title} ${badge}</h3>
                     <p style="margin-bottom: 5px;"><strong style="color:white;">Date:</strong> ${ev.date}</p>
                     <p style="color:var(--text-muted); margin-top:0;">${ev.desc}</p>
-                    <div class="admin-controls">
-                        <button class="btn" onclick="deleteEvent(${ev.id})" style="background:var(--danger); color:white;">Delete</button>
+                    
+                    <!-- RSVP Section -->
+                    <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: var(--accent); font-size: 0.95rem;">RSVPs (${rsvpCount})</strong>
+                            <button class="btn" onclick="addRsvp(${ev.id})" style="padding: 4px 10px; font-size: 0.8rem; background: var(--secondary); color: white; border: 1px solid #444;">+ RSVP</button>
+                        </div>
+                        <div style="color: var(--text-muted);">
+                            ${rsvpHtml}
+                        </div>
+                    </div>
+
+                    <div class="admin-controls" style="margin-top: 15px;">
+                        <button class="btn" onclick="deleteEvent(${ev.id})" style="background:var(--danger); color:white;">Delete Event</button>
                     </div>
                 </div>`;
         });
@@ -1079,6 +1117,29 @@
         // Re-apply search filters if there's text in the search boxes
         filterMissionaries();
         filterCompanionships();
+    }
+
+    // RSVP Functions
+    function addRsvp(eventId) {
+        const name = prompt("Enter your name to RSVP:");
+        if (name) {
+            const ev = appData.calendar.find(e => e.id === eventId);
+            if (ev) {
+                if (!ev.rsvps) ev.rsvps = [];
+                ev.rsvps.push(name);
+                saveData();
+            }
+        }
+    }
+
+    function removeRsvp(eventId, index) {
+        if (confirm("Are you sure you want to remove this RSVP?")) {
+            const ev = appData.calendar.find(e => e.id === eventId);
+            if (ev && ev.rsvps) {
+                ev.rsvps.splice(index, 1);
+                saveData();
+            }
+        }
     }
 
     // Search Missionaries Function
@@ -1287,7 +1348,7 @@
         const date = prompt("Event Date (e.g., Oct 24):");
         const desc = prompt("Event Description:");
         const color = prompt("Event Color (type 'red' for Mandatory/Urgent, or leave blank):", "");
-        appData.calendar.push({ id: Date.now(), title, date, desc, color });
+        appData.calendar.push({ id: Date.now(), title, date, desc, color, rsvps: [] });
         saveData();
     }
     
