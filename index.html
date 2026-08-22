@@ -36,9 +36,10 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            overflow-y: auto;
         }
         #appContent {
-            display: none; /* Hidden until password is correct */
+            display: none; /* Hidden until signed in */
         }
 
         header {
@@ -61,7 +62,7 @@
         }
 
         h1, h2, h3, h4 { margin-top: 0; }
-        
+
         .admin-btn {
             background-color: var(--accent);
             color: #000;
@@ -116,7 +117,7 @@
 
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
-        
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card {
@@ -147,7 +148,7 @@
             letter-spacing: 1px;
         }
         .editable p { margin-top: 0; }
-        
+
         .editable.editing {
             border: 2px dashed var(--accent);
             background-color: rgba(255, 255, 255, 0.03);
@@ -226,7 +227,7 @@
             border: 1px solid #333;
             transition: all 0.3s;
         }
-        
+
         .role-badge {
             position: absolute;
             top: -10px;
@@ -254,6 +255,12 @@
             justify-content: center;
             background: var(--secondary);
             transition: all 0.3s;
+            overflow: hidden;
+        }
+        .missionary-emoji img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Fun Cookies */
@@ -303,7 +310,7 @@
             transition: transform 0.1s;
         }
         .add-cookie:active { transform: scale(0.8); }
-        
+
         @keyframes toss {
             0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
             50% { transform: translateY(-30px) scale(1.5) rotate(180deg); opacity: 1; }
@@ -328,7 +335,8 @@
             transition: background 0.2s;
         }
         .btn:hover { background: var(--primary-hover); }
-        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
         /* Modals */
         .modal {
             display: none;
@@ -356,7 +364,8 @@
             font-weight: bold;
             font-size: 0.9rem;
         }
-        .modal-content input[type="text"], .modal-content input[type="password"], .modal-content select {
+        .modal-content input[type="text"], .modal-content input[type="password"],
+        .modal-content input[type="email"], .modal-content input[type="file"], .modal-content select {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -381,12 +390,22 @@
             outline: none;
             border-color: var(--primary);
         }
-        
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .checkbox-row input { width: auto; margin: 0; }
+        .checkbox-row label { margin: 0; }
+        .field-hint { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+        .error-text { color: var(--danger); font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; }
+
         .admin-controls { display: none; margin-top: 15px; }
         .admin-mode .admin-controls { display: block; }
         .admin-mode .admin-controls-inline { display: inline-block; }
         .admin-controls-inline { display: none; }
-        
+
         .list-item {
             border-bottom: 1px solid #333;
             padding-bottom: 15px;
@@ -401,13 +420,13 @@
 
         /* Search input styling */
         #missionarySearch, #companionshipSearch {
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 25px; 
-            border-radius: 8px; 
-            border: 1px solid #444; 
-            background: var(--bg-dark); 
-            color: white; 
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: var(--bg-dark);
+            color: white;
             box-sizing: border-box;
             font-family: inherit;
             font-size: 1rem;
@@ -436,7 +455,7 @@
             border-color: var(--primary);
             color: var(--primary);
         }
-        
+
         /* RSVP Styling */
         .rsvp-badge {
             display: inline-block;
@@ -453,28 +472,68 @@
             margin-left: 5px;
             font-weight: bold;
         }
+
+        .invite-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.9rem;
+        }
+        .invite-row:last-child { border-bottom: none; }
+        .invite-code {
+            font-family: monospace;
+            background: rgba(255,255,255,0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
 
-<!-- Login Screen -->
+<!-- Login / Redeem Invite Screen -->
 <div id="loginScreen">
-    <div class="card" style="margin: 0; text-align: center; width: 90%; max-width: 350px;">
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Zone Hub Login</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">Please enter the site password to continue.</p>
-        <input type="password" id="sitePassword" placeholder="Password" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: var(--bg-dark); color: white; box-sizing: border-box; font-family: inherit;" onkeypress="if(event.key === 'Enter') checkSitePassword()">
-        <button class="btn" style="width: 100%;" onclick="checkSitePassword()">Enter Site</button>
+    <div class="card" style="margin: 20px 0; text-align: center; width: 90%; max-width: 380px;">
+        <h2 style="color: var(--primary); margin-bottom: 5px;">Zone Hub</h2>
+
+        <!-- Sign In Form -->
+        <div id="signInForm">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Sign in to continue.</p>
+            <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
+            <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;" onkeypress="if(event.key === 'Enter') doSignIn()">
+            <button class="btn" style="width: 100%;" onclick="doSignIn()">Sign In</button>
+            <p id="signInError" class="error-text"></p>
+            <p style="margin-top: 20px; font-size: 0.9rem;">
+                Have an invite code? <a href="#" style="color: var(--primary);" onclick="toggleAuthMode('redeem'); return false;">Create your account</a>
+            </p>
+        </div>
+
+        <!-- Redeem Invite Form -->
+        <div id="redeemForm" style="display:none;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter the invite code your zone leader gave you.</p>
+            <input type="email" id="inviteEmail" placeholder="Email your invite was sent to" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
+            <input type="text" id="inviteCode" placeholder="Invite Code" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit; text-transform:uppercase;">
+            <input type="password" id="invitePassword" placeholder="Choose a Password" autocomplete="new-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
+            <button class="btn" style="width: 100%;" onclick="doRedeemInvite()">Create Account</button>
+            <p id="redeemError" class="error-text"></p>
+            <p id="redeemNotice" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; display:none;">Check your email to confirm your account, then sign in.</p>
+            <p style="margin-top: 20px; font-size: 0.9rem;">
+                Already have an account? <a href="#" style="color: var(--primary);" onclick="toggleAuthMode('signin'); return false;">Sign in</a>
+            </p>
+        </div>
     </div>
 </div>
 
-<!-- Main App Content (Hidden until logged in) -->
+<!-- Main App Content (Hidden until signed in) -->
 <div id="appContent">
     <header>
         <h1>Zone Hub</h1>
         <div class="header-controls">
-            <!-- The Save Updates button is now available to everyone -->
-            <button class="btn" id="exportBtn" onclick="saveToGitHub()" style="background: var(--secondary); color: white; border: 1px solid #444;">Save Updates</button>
-            <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
+            <button class="btn admin-controls-inline" onclick="openInviteModal()" style="background: var(--secondary); color: white; border: 1px solid #444;">+ Invite Missionary</button>
+            <button class="admin-btn" onclick="signOut()">Sign Out</button>
         </div>
     </header>
 
@@ -492,24 +551,29 @@
         <!-- General Info Tab -->
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
-            
+
             <div class="card">
                 <h3 style="color: var(--accent);">Regular Meetings</h3>
-                <div id="meetingsText" class="editable">Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM</div>
+                <div id="meetingsText" class="editable">Loading...</div>
             </div>
-            
+
             <div class="card">
                 <h3 style="color: var(--accent);">Leadership & Advisors</h3>
                 <div class="admin-controls" style="margin-bottom: 20px;">
-                    <button class="btn" style="background: var(--accent);" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+                    <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
                 </div>
                 <div id="leadersList"></div>
+            </div>
+
+            <div class="card admin-controls">
+                <h3 style="color: var(--accent);">Pending Invites</h3>
+                <div id="invitesList"></div>
             </div>
 
             <div class="admin-controls" style="margin: 30px 0 15px 0;">
                 <button class="btn" style="background: var(--accent);" onclick="addGeneralNote()">+ Add New Note Section</button>
             </div>
-            
+
             <!-- Dynamic General Notes Container -->
             <div id="generalNotesContainer"></div>
         </div>
@@ -534,11 +598,10 @@
                     </div>
                     <div id="sitesList"></div>
                 </div>
-                
+
                 <div class="card">
                     <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
                     <div style="margin-bottom: 15px;">
-                        <!-- Available to everyone -->
                         <button class="btn" onclick="openGatheringModal()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
                     </div>
                     <div id="gatheringsList"></div>
@@ -559,35 +622,10 @@
         <!-- Districts Tab -->
         <div id="districts" class="tab-content">
             <h2>Districts</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3 style="color: var(--accent);">District 1</h3>
-                    <div id="district1Text" class="editable">
-                        <h4>District Leaders</h4>
-                        <p>Elder Adams (555-1111)</p>
-                        
-                        <h4>Sister Training Leaders</h4>
-                        <p>Sister Brown (555-2222)</p>
-                        
-                        <h4>Missionaries</h4>
-                        <p>Elder Adams & Elder Clark<br>Sister Brown & Sister Evans</p>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 style="color: var(--accent);">District 2</h3>
-                    <div id="district2Text" class="editable">
-                        <h4>District Leaders</h4>
-                        <p>Elder Ford (555-3333)</p>
-                        
-                        <h4>Sister Training Leaders</h4>
-                        <p>Sister Garcia (555-4444)</p>
-                        
-                        <h4>Missionaries</h4>
-                        <p>Elder Ford & Elder Harris<br>Sister Garcia & Sister Hill</p>
-                    </div>
-                </div>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="addDistrict()">+ Add District</button>
             </div>
+            <div id="districtsList" class="grid"></div>
         </div>
 
         <!-- Companionships Tab -->
@@ -596,22 +634,21 @@
             <div class="admin-controls" style="margin-bottom: 20px;">
                 <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
             </div>
-            
-            <!-- Search Input -->
+
             <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
-            
+
             <div id="companionshipsList" class="grid"></div>
         </div>
 
         <!-- Missionaries Tab -->
         <div id="missionaries" class="tab-content">
             <h2>Missionary Profiles</h2>
-            <!-- Available to everyone -->
-            <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
-            
-            <!-- Search Input -->
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="openProfileModal()" style="background: var(--accent); color: black;">+ Add Directory Placeholder</button>
+            </div>
+
             <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
-            
+
             <div id="missionaryList" class="grid"></div>
         </div>
     </main>
@@ -621,16 +658,16 @@
         <div class="modal-content">
             <h2 style="color: var(--accent); margin-top:0;">Edit Leader/Advisor</h2>
             <input type="hidden" id="ldrId">
-            
+
             <label>Role / Title</label>
             <input type="text" id="ldrRole" placeholder="e.g. Zone Leaders, Service Advisors">
-            
+
             <label>Name(s)</label>
             <input type="text" id="ldrName" placeholder="e.g. Elder Smith & Elder Jones">
-            
+
             <label>Phone Number</label>
             <input type="text" id="ldrPhone" placeholder="e.g. 555-0100">
-            
+
             <label>Profile Emoji</label>
             <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
 
@@ -646,16 +683,16 @@
         <div class="modal-content">
             <h2 id="gatheringModalTitle" style="color: var(--accent); margin-top:0;">Edit Gathering / Idea</h2>
             <input type="hidden" id="gathId">
-            
+
             <label>Title</label>
             <input type="text" id="gathTitle" placeholder="e.g. Zone Temple Trip">
-            
+
             <label>Date or Timeline</label>
             <input type="text" id="gathDate" placeholder="e.g. Aug 20, or 'Every Friday'">
-            
+
             <label>Description & Details</label>
             <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
-            
+
             <label>Emoji</label>
             <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
 
@@ -669,22 +706,53 @@
         </div>
     </div>
 
+    <!-- Invite Modal -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--accent); margin-top:0;">Invite Missionary</h2>
+
+            <label>Email</label>
+            <input type="email" id="invEmail" placeholder="their@email.com">
+
+            <label>Claims Which Directory Entry?</label>
+            <select id="invClaim">
+                <option value="">— New Missionary (blank profile) —</option>
+            </select>
+            <p class="field-hint">Pick their existing entry if they're already on the zone list, so their invite links up to their existing info.</p>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="invIsAdmin">
+                <label style="margin-top:0;" for="invIsAdmin">Make this person an admin</label>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="submitInvite()" style="background: var(--primary);">Create Invite</button>
+                <button class="btn" onclick="closeInviteModal()" style="background: var(--secondary); color: white;">Cancel</button>
+            </div>
+            <p id="inviteError" class="error-text"></p>
+        </div>
+    </div>
+
     <!-- Profile Modal -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle" style="color: var(--accent); margin-top:0;">Edit Profile</h2>
             <input type="hidden" id="profId">
-            
+
+            <p id="onboardingNotice" style="color: var(--primary); font-weight: bold; display:none;">Welcome! Please finish filling out your profile.</p>
+
             <label>Name</label>
             <input type="text" id="profName" placeholder="e.g. Elder Smith">
-            
-            <label>Profile Emoji</label>
-            <input type="text" id="profEmoji" placeholder="Enter an emoji (e.g. 🚴‍♂️)" maxlength="5">
+
+            <label>Photo</label>
+            <input type="file" id="profPhotoFile" accept="image/*">
+
+            <label>Profile Emoji (shown if no photo)</label>
+            <input type="text" id="profEmoji" placeholder="e.g. 🚴‍♂️" maxlength="5">
 
             <label>Theme Color</label>
             <input type="color" id="profColor" value="#d4af37">
 
-            <!-- Admin Only Role Selector -->
             <div id="roleSelectorDiv" style="display: none;">
                 <label>Zone Service Assignment (Admin Only)</label>
                 <select id="profRole">
@@ -700,797 +768,867 @@
 
             <label>Service Sites</label>
             <input type="text" id="profSites" placeholder="Where do you serve?">
-            
+
             <label>Birthday</label>
             <input type="text" id="profBirthday" placeholder="e.g. October 24">
-            
+
             <label>Companion</label>
             <input type="text" id="profCompanion" placeholder="Current Companion">
-            
+
             <label>District</label>
             <input type="text" id="profDistrict" placeholder="Which District?">
-            
+
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
-                <button class="btn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
-                <button class="btn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
+                <button class="btn" id="profSaveBtn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
+                <button class="btn" id="profCancelBtn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
+                <button class="btn admin-controls" id="profDeleteBtn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
             </div>
+            <p id="profileError" class="error-text"></p>
         </div>
     </div>
 </div> <!-- End of App Content -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-    // --- SITE PASSWORD ---
-    const SITE_PASSWORD = "service123!";
+    // --- SUPABASE CONFIGURATION ---
+    // The anon key is safe to ship client-side -- every table it can touch is
+    // locked down by Row Level Security policies on the database side.
+    const SUPABASE_URL = "https://slqdajsrbrvijjzgrqdh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNscWRhanNyYnJ2aWpqemdycWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTk3NTEsImV4cCI6MjEwMjk5NTc1MX0.5cF_iVSduMn2HMhEG_g0sG4eDjRVdvuy7kIMjrSTKIo";
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true }
+    });
 
-    // --- GIST CONFIGURATION ---
-    const GIST_RAW_URL = "https://gist.githubusercontent.com/PGMissionaries/a7fdba9001fbe1ef74e656bab41e6e71/raw/data.json"; 
-    const GIST_ID = "a7fdba9001fbe1ef74e656bab41e6e71";
-    
-    // Obfuscated GitHub Token to bypass GitHub's automated Secret Scanning
-    const t1 = "ghp_";
-    const t2 = "vUZVgnNG";
-    const t3 = "qEVDO1kNEHy";
-    const t4 = "ZVFjpfxpw";
-    const t5 = "z13mN7zZ";
-    const GIST_TOKEN = t1 + t2 + t3 + t4 + t5;
-
-    // App State
-    let isAdmin = false;
-    const PASSKEY = "100";
-
-    // Default Data Structure Structure
-    let appData = {
-        general: {
-            meetings: "Sunday Sacrament: 10:00 AM (123 Main St)<br>Zone Conference: 3rd Thursday, 9:00 AM",
-            leadership: [
-                { id: 1, role: "Service Mission Advisors", name: "Brother & Sister Smith", phone: "555-0101", emoji: "🧓" },
-                { id: 2, role: "Zone Leaders", name: "Elder Johnson & Elder Davis", phone: "555-0102", emoji: "👔" }
-            ],
-            customNotes: [] 
-        },
-        calendar: [
-            { id: 1, date: "2026-08-15", title: "Zone Activity", desc: "Volleyball at the park.", color: "blue", rsvps: [] }
-        ],
-        service: {
-            sites: [
-                { id: 1, title: "Local Food Bank", desc: "Sort donations every Tuesday at 10 AM.", contact: "Jane Doe (555-1234)" }
-            ],
-            gatherings: [
-                { id: 1, title: "Zone Temple Trip", desc: "Carpooling from the stake center.", date: "Aug 20", emoji: "🛕", color: "#d4af37" }
-            ]
-        },
-        resources: [
-            { id: 1, title: "Zone Boundaries Map", url: "#" }
-        ],
-        districts: {
-            d1: "<h4>District Leaders</h4><p>Elder Adams (555-1111)</p><h4>Sister Training Leaders</h4><p>Sister Brown (555-2222)</p><h4>Missionaries</h4><p>Elder Adams & Elder Clark<br>Sister Brown & Sister Evans</p>",
-            d2: "<h4>District Leaders</h4><p>Elder Ford (555-3333)</p><h4>Sister Training Leaders</h4><p>Sister Garcia (555-4444)</p><h4>Missionaries</h4><p>Elder Ford & Elder Harris<br>Sister Garcia & Sister Hill</p>"
-        },
-        companionships: [
-            { id: 1, names: "Elder Adams & Elder Clark" },
-            { id: 2, names: "Sister Brown & Sister Evans" },
-            { id: 3, names: "Elder Ford & Elder Harris" },
-            { id: 4, names: "Sister Garcia & Sister Hill" }
-        ],
-        missionaries: [
-            { id: 1, name: "Elder Adams", emoji: "🚲", color: "#d4af37", role: "DL", phone: "555-1111", sites: "North Area", birthday: "Jan 12", companion: "Elder Clark", district: "1", cookies: 5 }
-        ]
+    // App State -- populated from Supabase, never trusted for authorization
+    // (RLS on the server is what actually enforces who can do what).
+    let state = {
+        userId: null,
+        me: null,
+        isAdmin: false,
+        missionaries: [],
+        leadership: [],
+        calendarEvents: [],
+        serviceSites: [],
+        gatherings: [],
+        resources: [],
+        districts: [],
+        companionships: [],
+        generalNotes: [],
+        meetingsHtml: "",
+        invites: []
     };
 
-    // Global Login Check
-    function checkSitePassword() {
-        const pwd = document.getElementById('sitePassword').value;
-        if (pwd === SITE_PASSWORD) {
-            sessionStorage.setItem('zoneHubAccess', 'granted');
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            initApp();
-        } else {
-            alert("Incorrect Password.");
-        }
+    function esc(str) {
+        return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[c]));
     }
 
-    // Initialize App and Fetch Gist Data
-    async function initApp() {
-        const localData = localStorage.getItem('zoneHubDataV10');
-        if (localData) {
-            appData = JSON.parse(localData);
-        }
-
-        // Fetch the remote JSON if a URL is provided
-        if (GIST_RAW_URL) {
-            try {
-                // Add a cache-busting parameter to ensure we pull the absolute newest version
-                const cacheBuster = new Date().getTime();
-                const res = await fetch(`${GIST_RAW_URL}?t=${cacheBuster}`);
-                const data = await res.json();
-                if (data) {
-                    appData = data;
-                    if(!appData.service) appData.service = { sites: [], gatherings: [] };
-                    if(!appData.resources) appData.resources = [];
-                    
-                    // Safely migrate older fields
-                    appData.missionaries.forEach(m => { if(m.cookies === undefined) m.cookies = m.dabloons || 0; });
-                    appData.calendar.forEach(e => { if(!e.rsvps) e.rsvps = []; });
-                    
-                    localStorage.setItem('zoneHubDataV10', JSON.stringify(appData));
-                }
-            } catch (err) {
-                console.error("Failed to fetch zone data from Gist:", err);
-            }
-        }
-        
-        renderApp();
+    function myMissionaryId() {
+        return state.me ? state.me.id : null;
     }
 
-    // Auto-Save to GitHub API (Available to everyone)
-    async function saveToGitHub() {
-        const btn = document.getElementById('exportBtn');
-        const originalText = btn.innerText;
-        btn.innerText = "Saving...";
-        btn.style.background = "#ffcf40";
-        btn.style.color = "#000";
+    // --- Auth ---
 
+    function toggleAuthMode(mode) {
+        document.getElementById("signInForm").style.display = mode === "signin" ? "block" : "none";
+        document.getElementById("redeemForm").style.display = mode === "redeem" ? "block" : "none";
+    }
+
+    async function doSignIn() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const errEl = document.getElementById("signInError");
+        errEl.textContent = "";
+        const { error } = await db.auth.signInWithPassword({ email, password });
+        if (error) errEl.textContent = error.message;
+    }
+
+    async function doRedeemInvite() {
+        const email = document.getElementById("inviteEmail").value.trim();
+        const code = document.getElementById("inviteCode").value.trim().toUpperCase();
+        const password = document.getElementById("invitePassword").value;
+        const errEl = document.getElementById("redeemError");
+        errEl.textContent = "";
+        if (!email || !code || !password) {
+            errEl.textContent = "Fill in every field.";
+            return;
+        }
+        const { data, error } = await db.auth.signUp({
+            email, password,
+            options: { data: { invite_code: code } }
+        });
+        if (error) {
+            errEl.textContent = error.message.includes("Database error")
+                ? "That invite code doesn't match, was already used, or has expired."
+                : error.message;
+            return;
+        }
+        if (data.session) {
+            // Email confirmation is off for this project -- signed in immediately.
+            return;
+        }
+        document.getElementById("redeemNotice").style.display = "block";
+    }
+
+    async function signOut() {
+        await db.auth.signOut();
+    }
+
+    // --- Boot / session handling ---
+
+    function showLogin() {
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("appContent").style.display = "none";
+    }
+
+    let entering = false;
+    async function enterApp(userId) {
+        if (entering) return;
+        entering = true;
         try {
-            const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${GIST_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    files: {
-                        "data.json": {
-                            content: JSON.stringify(appData, null, 2)
-                        }
-                    }
-                })
-            });
-
-            if (response.ok) {
-                btn.innerText = "Saved to Live Site!";
-                btn.style.background = "#06D6A0";
-                btn.style.color = "#000";
-            } else {
-                throw new Error("GitHub API rejected the request.");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error saving to GitHub. Make sure your hardcoded token is valid.");
-            btn.innerText = "Error Saving";
-            btn.style.background = "var(--danger)";
-            btn.style.color = "white";
+            state.userId = userId;
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("appContent").style.display = "block";
+            await loadAll();
+            maybePromptOnboarding();
+        } finally {
+            entering = false;
         }
-
-        setTimeout(() => {
-            btn.innerText = "Save Updates";
-            btn.style.background = "var(--secondary)";
-            btn.style.color = "white";
-        }, 3000);
     }
 
-    // Save Data (Locally for immediate render)
-    function saveData() {
-        localStorage.setItem('zoneHubDataV10', JSON.stringify(appData));
+    db.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+            enterApp(session.user.id);
+        } else {
+            state = { ...state, userId: null, me: null, isAdmin: false };
+            showLogin();
+        }
+    });
+
+    db.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) enterApp(data.session.user.id);
+        else showLogin();
+    });
+
+    // --- Data loading ---
+
+    async function loadAll() {
+        const [
+            meRes, missRes, leadRes, calRes, rsvpRes, sitesRes, gatherRes,
+            resRes, distRes, compRes, notesRes, infoRes, invRes
+        ] = await Promise.all([
+            db.from("missionaries").select("*").eq("auth_user_id", state.userId).maybeSingle(),
+            db.from("missionaries").select("*").order("name"),
+            db.from("leadership").select("*").order("created_at"),
+            db.from("calendar_events").select("*").order("created_at"),
+            db.from("event_rsvps").select("id, event_id, missionary_id, missionaries(name)"),
+            db.from("service_sites").select("*").order("created_at"),
+            db.from("gatherings").select("*").order("created_at"),
+            db.from("resources").select("*").order("created_at"),
+            db.from("districts").select("*").order("created_at"),
+            db.from("companionships").select("*").order("created_at"),
+            db.from("general_notes").select("*").order("created_at"),
+            db.from("general_info").select("*").maybeSingle(),
+            db.from("invites").select("*").order("created_at")
+        ]);
+
+        state.me = meRes.data ?? null;
+        state.isAdmin = state.me?.app_role === "admin";
+        state.missionaries = missRes.data ?? [];
+        state.leadership = leadRes.data ?? [];
+        state.serviceSites = sitesRes.data ?? [];
+        state.gatherings = gatherRes.data ?? [];
+        state.resources = resRes.data ?? [];
+        state.districts = distRes.data ?? [];
+        state.companionships = compRes.data ?? [];
+        state.generalNotes = notesRes.data ?? [];
+        state.meetingsHtml = infoRes.data?.meetings_html ?? "";
+        state.invites = invRes.data ?? [];
+
+        const rsvpsByEvent = {};
+        (rsvpRes.data ?? []).forEach((r) => {
+            (rsvpsByEvent[r.event_id] ||= []).push({ id: r.id, missionary_id: r.missionary_id, name: r.missionaries?.name ?? "Unknown" });
+        });
+        state.calendarEvents = (calRes.data ?? []).map((ev) => ({ ...ev, rsvps: rsvpsByEvent[ev.id] || [] }));
+
+        document.body.classList.toggle("admin-mode", state.isAdmin);
         renderApp();
     }
 
-    // Tab Switching
+    function isProfileIncomplete(m) {
+        if (!m) return false;
+        return !m.phone && !m.sites && !m.birthday && !m.companion && !m.district;
+    }
+
+    function maybePromptOnboarding() {
+        if (state.me && isProfileIncomplete(state.me)) {
+            openProfileModal(state.me.id, { forced: true });
+        }
+    }
+
+    // --- Tab switching ---
+
     function switchTab(evt, tabName) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(tabName).classList.add('active');
-        evt.currentTarget.classList.add('active');
+        document.querySelectorAll(".tab-content").forEach((tab) => tab.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
     }
 
-    // Admin Authentication
-    function toggleAdmin() {
-        if (isAdmin) {
-            isAdmin = false;
-            document.body.classList.remove('admin-mode');
-            document.getElementById('adminBtn').innerText = "Admin";
-            document.getElementById('adminBtn').style.background = "var(--accent)";
-            document.getElementById('adminBtn').style.color = "#000";
-            setEditableElements(false);
-        } else {
-            const pwd = prompt("Enter the Zone Passkey:");
-            if (pwd === PASSKEY) {
-                isAdmin = true;
-                document.body.classList.add('admin-mode');
-                document.getElementById('adminBtn').innerText = "Lock";
-                document.getElementById('adminBtn').style.background = "var(--danger)";
-                document.getElementById('adminBtn').style.color = "#fff";
-                setEditableElements(true);
-            } else if (pwd !== null) {
-                alert("Incorrect Passkey.");
-            }
-        }
-    }
+    // --- Rendering ---
 
-    // Make elements contenteditable
-    function setEditableElements(isEditable) {
-        const editables = document.querySelectorAll('.editable');
-        editables.forEach(el => {
-            el.contentEditable = isEditable;
-            if (isEditable) el.classList.add('editing');
-            else el.classList.remove('editing');
-            
-            el.onblur = function() {
-                if (el.id === 'meetingsText') appData.general.meetings = el.innerHTML;
-                if (el.id === 'district1Text') appData.districts.d1 = el.innerHTML;
-                if (el.id === 'district2Text') appData.districts.d2 = el.innerHTML;
-                
-                if (el.classList.contains('custom-note')) {
-                    const noteId = parseInt(el.getAttribute('data-id'));
-                    const note = appData.general.customNotes.find(n => n.id === noteId);
-                    if (note) note.content = el.innerHTML;
-                }
-                
-                saveData();
-            };
-        });
-    }
-
-    // Render App Data
     function renderApp() {
-        // Static Text Areas
-        document.getElementById('meetingsText').innerHTML = appData.general.meetings;
-        document.getElementById('district1Text').innerHTML = appData.districts.d1;
-        document.getElementById('district2Text').innerHTML = appData.districts.d2;
-
-        // Leadership & Advisors
-        const leadersList = document.getElementById('leadersList');
-        leadersList.innerHTML = '';
-        (appData.general.leadership || []).forEach(ldr => {
-            const displayEmoji = ldr.emoji || '👤';
-            leadersList.innerHTML += `
-                <div class="leader-card">
-                    <div class="leader-emoji">${displayEmoji}</div>
-                    <div class="leader-info">
-                        <div class="role-title">${ldr.role}</div>
-                        <h4>${ldr.name}</h4>
-                        <p>📞 ${ldr.phone}</p>
-                    </div>
-                    <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
-                        <button class="btn" onclick="deleteLeader(${ldr.id})" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Delete</button>
-                    </div>
-                </div>`;
-        });
-
-        // General Tab Custom Notes
-        const notesContainer = document.getElementById('generalNotesContainer');
-        notesContainer.innerHTML = '';
-        (appData.general.customNotes || []).forEach(note => {
-            const isUrgent = note.color && note.color.toLowerCase() === 'red';
-            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : '';
-            const borderStyle = note.color ? `border-left-color: ${note.color};` : '';
-
-            notesContainer.innerHTML += `
-                <div class="card" style="${borderStyle}">
-                    <h3 style="color: var(--accent); display:flex; align-items:center;">${note.title} ${badge}</h3>
-                    <div id="note-${note.id}" class="editable custom-note" data-id="${note.id}">${note.content}</div>
-                    <div class="admin-controls">
-                        <button class="btn" onclick="deleteGeneralNote(${note.id})" style="background:var(--danger); color:white; margin-top:10px; padding:5px 10px; font-size:0.85rem;">Delete Section</button>
-                    </div>
-                </div>`;
-        });
-
-        // Calendar
-        const calList = document.getElementById('calendarList');
-        calList.innerHTML = '';
-        appData.calendar.forEach(ev => {
-            const isUrgent = ev.color && ev.color.toLowerCase() === 'red';
-            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : '';
-            const borderStyle = ev.color ? `border-left-color: ${ev.color};` : '';
-
-            const rsvps = ev.rsvps || [];
-            const rsvpCount = rsvps.length;
-            const rsvpHtml = rsvpCount > 0 
-                ? rsvps.map((name, idx) => `<span class="rsvp-badge">${name} <span class="rsvp-remove" onclick="removeRsvp(${ev.id}, ${idx})">&times;</span></span>`).join('') 
-                : 'None yet.';
-
-            calList.innerHTML += `
-                <div class="card" style="${borderStyle}">
-                    <h3 style="color:var(--primary); margin-bottom: 10px;">${ev.title} ${badge}</h3>
-                    <p style="margin-bottom: 5px;"><strong style="color:white;">Date:</strong> ${ev.date}</p>
-                    <p style="color:var(--text-muted); margin-top:0;">${ev.desc}</p>
-                    
-                    <!-- RSVP Section -->
-                    <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="color: var(--accent); font-size: 0.95rem;">RSVPs (${rsvpCount})</strong>
-                            <button class="btn" onclick="addRsvp(${ev.id})" style="padding: 4px 10px; font-size: 0.8rem; background: var(--secondary); color: white; border: 1px solid #444;">+ RSVP</button>
-                        </div>
-                        <div style="color: var(--text-muted);">
-                            ${rsvpHtml}
-                        </div>
-                    </div>
-
-                    <div class="admin-controls" style="margin-top: 15px;">
-                        <button class="btn" onclick="deleteEvent(${ev.id})" style="background:var(--danger); color:white;">Delete Event</button>
-                    </div>
-                </div>`;
-        });
-
-        // Service Tab - Sites
-        const sitesList = document.getElementById('sitesList');
-        sitesList.innerHTML = '';
-        (appData.service?.sites || []).forEach(site => {
-            sitesList.innerHTML += `
-                <div class="list-item">
-                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${site.title}</h4>
-                    <p style="margin:0 0 5px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${site.desc}</p>
-                    <p style="margin:0; font-size: 0.85em; color:var(--text-muted);">📞 Contact: ${site.contact}</p>
-                    <div class="admin-controls">
-                        <button class="btn" onclick="deleteSite(${site.id})" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem; margin-top: 10px;">Delete Site</button>
-                    </div>
-                </div>`;
-        });
-
-        // Service Tab - Gatherings
-        const gatheringsList = document.getElementById('gatheringsList');
-        gatheringsList.innerHTML = '';
-        (appData.service?.gatherings || []).forEach(g => {
-            const gColor = g.color || 'var(--primary)';
-            const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${g.emoji}</span>` : '';
-            
-            gatheringsList.innerHTML += `
-                <div class="list-item" style="border-left: 4px solid ${gColor}; padding-left: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;">
-                    <h4 style="color:var(--accent); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
-                        ${gEmoji} ${g.title}
-                    </h4>
-                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${gColor}; font-weight: bold;">🗓️ ${g.date}</p>
-                    <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${g.desc}</p>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn" onclick="openGatheringModal(${g.id})" style="background:var(--secondary); color:white; padding: 4px 10px; font-size: 0.8rem; border: 1px solid #444;">Edit Idea</button>
-                        <button class="btn" onclick="deleteGathering(${g.id})" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
-                    </div>
-                </div>`;
-        });
-
-        // Resources Tab
-        const resourcesList = document.getElementById('resourcesList');
-        resourcesList.innerHTML = '';
-        (appData.resources || []).forEach(res => {
-            resourcesList.innerHTML += `
-                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <h3 style="color:var(--primary); margin-bottom: 15px; text-align: center;">${res.title}</h3>
-                    <a href="${res.url}" target="_blank" class="resource-link">Open Document</a>
-                    <div class="admin-controls">
-                        <button class="btn" onclick="deleteResource(${res.id})" style="background:var(--danger); color:white; width: 100%;">Delete</button>
-                    </div>
-                </div>`;
-        });
-
-        // Companionships
-        const compList = document.getElementById('companionshipsList');
-        compList.innerHTML = '';
-        appData.companionships.forEach(comp => {
-            compList.innerHTML += `
-                <div class="comp-block">
-                    ${comp.names}
-                    <div class="admin-controls" style="margin-top:10px;">
-                        <button class="btn" onclick="deleteCompanionship(${comp.id})" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Remove</button>
-                    </div>
-                </div>`;
-        });
-
-        // Missionaries
-        const missList = document.getElementById('missionaryList');
-        missList.innerHTML = '';
-        appData.missionaries.forEach(m => {
-            const roleBadge = m.role ? `<div class="role-badge active">${m.role}</div>` : '';
-            const displayEmoji = m.emoji || '👤';
-            const mColor = m.color || 'var(--primary)';
-            const currentCookies = m.cookies || 0;
-            
-            missList.innerHTML += `
-                <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${mColor};">
-                    ${roleBadge}
-                    <div class="missionary-emoji" style="border-color: ${mColor};">${displayEmoji}</div>
-                    <h3 class="missionary-name">${m.name}</h3>
-                    <div class="cookie-banner" id="banner-${m.id}">${m.name} has ${currentCookies} cookies</div>
-                    
-                    <div class="cookies-container">
-                        <span class="cookie-score">🍪 <span id="score-${m.id}">${currentCookies}</span></span>
-                        <button class="add-cookie" onclick="addCookie(event, ${m.id})">+</button>
-                    </div>
-
-                    <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-                    <p style="font-size: 0.95em; text-align: left; color: var(--text-muted); line-height:1.8;">
-                        <strong style="color:white;">Phone:</strong> ${m.phone || 'N/A'}<br>
-                        <strong style="color:white;">Sites:</strong> ${m.sites}<br>
-                        <strong style="color:white;">Birthday:</strong> ${m.birthday}<br>
-                        <strong style="color:white;">Companion:</strong> ${m.companion}<br>
-                        <strong style="color:white;">District:</strong> ${m.district}
-                    </p>
-                    <button class="btn" onclick="openProfileModal(${m.id})" style="width:100%; margin-top:10px; background:var(--secondary); color:white; border: 1px solid #444;">Edit Profile</button>
-                </div>`;
-        });
-
-        if (isAdmin) {
-            setEditableElements(true);
-        }
-
-        // Re-apply search filters if there's text in the search boxes
+        document.getElementById("meetingsText").innerHTML = state.meetingsHtml || "Click to add meeting info...";
+        renderLeadership();
+        renderInvites();
+        renderGeneralNotes();
+        renderCalendar();
+        renderSites();
+        renderGatherings();
+        renderResources();
+        renderDistricts();
+        renderCompanionships();
+        renderMissionaries();
+        setEditableElements();
         filterMissionaries();
         filterCompanionships();
     }
 
-    // RSVP Functions
-    function addRsvp(eventId) {
-        const name = prompt("Enter your name to RSVP:");
-        if (name) {
-            const ev = appData.calendar.find(e => e.id === eventId);
-            if (ev) {
-                if (!ev.rsvps) ev.rsvps = [];
-                ev.rsvps.push(name);
-                saveData();
-            }
-        }
-    }
+    function setEditableElements() {
+        const meetings = document.getElementById("meetingsText");
+        meetings.contentEditable = state.isAdmin;
+        meetings.classList.toggle("editing", state.isAdmin);
+        meetings.onblur = () => updateMeetings(meetings.innerHTML);
 
-    function removeRsvp(eventId, index) {
-        if (confirm("Are you sure you want to remove this RSVP?")) {
-            const ev = appData.calendar.find(e => e.id === eventId);
-            if (ev && ev.rsvps) {
-                ev.rsvps.splice(index, 1);
-                saveData();
-            }
-        }
-    }
+        document.querySelectorAll(".district-content").forEach((el) => {
+            el.contentEditable = state.isAdmin;
+            el.classList.toggle("editing", state.isAdmin);
+            el.onblur = () => updateDistrictContent(el.dataset.id, el.innerHTML);
+        });
 
-    // Search Missionaries Function
-    function filterMissionaries() {
-        const query = document.getElementById('missionarySearch').value.toLowerCase();
-        const cards = document.querySelectorAll('.missionary-card');
-        
-        cards.forEach(card => {
-            const nameElement = card.querySelector('.missionary-name');
-            if (nameElement) {
-                const name = nameElement.innerText.toLowerCase();
-                if (name.includes(query)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            }
+        document.querySelectorAll(".custom-note").forEach((el) => {
+            el.contentEditable = state.isAdmin;
+            el.classList.toggle("editing", state.isAdmin);
+            el.onblur = () => updateGeneralNoteContent(el.dataset.id, el.innerHTML);
         });
     }
 
-    // Search Companionships Function
-    function filterCompanionships() {
-        const query = document.getElementById('companionshipSearch').value.toLowerCase();
-        const blocks = document.querySelectorAll('.comp-block');
-        
-        blocks.forEach(block => {
-            // Check text content of the entire block
-            const text = block.innerText.toLowerCase();
-            if (text.includes(query)) {
-                block.style.display = 'block';
-            } else {
-                block.style.display = 'none';
-            }
+    async function updateMeetings(html) {
+        if (!state.isAdmin) return;
+        state.meetingsHtml = html;
+        await db.from("general_info").update({ meetings_html: html }).eq("id", true);
+    }
+
+    // Leadership
+    function renderLeadership() {
+        const el = document.getElementById("leadersList");
+        el.innerHTML = "";
+        state.leadership.forEach((ldr) => {
+            el.innerHTML += `
+                <div class="leader-card">
+                    <div class="leader-emoji">${esc(ldr.emoji || "👤")}</div>
+                    <div class="leader-info">
+                        <div class="role-title">${esc(ldr.role_title)}</div>
+                        <h4>${esc(ldr.name)}</h4>
+                        <p>📞 ${esc(ldr.phone)}</p>
+                    </div>
+                    <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
+                        <button class="btn" onclick="deleteLeader('${ldr.id}')" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Delete</button>
+                    </div>
+                </div>`;
         });
     }
 
-    // Resources Functions
-    function addResource() {
-        if (!isAdmin) return;
-        const title = prompt("Document Title (e.g., Zone Map, July Training):");
-        if (!title) return;
-        const url = prompt("Paste the Share Link (Google Drive, Dropbox, OneDrive, etc.):");
-        if (!url) return;
-
-        if (!appData.resources) appData.resources = [];
-        appData.resources.push({ id: Date.now(), title, url });
-        saveData();
-    }
-
-    function deleteResource(id) {
-        if (!isAdmin) return;
-        if(confirm("Are you sure you want to delete this resource link?")) {
-            appData.resources = appData.resources.filter(r => r.id !== id);
-            saveData();
-        }
-    }
-
-    // Leadership Profile Functions
     function openLeaderModal() {
-        document.getElementById('ldrId').value = "";
-        document.getElementById('ldrRole').value = "";
-        document.getElementById('ldrName').value = "";
-        document.getElementById('ldrPhone').value = "";
-        document.getElementById('ldrEmoji').value = "";
-        document.getElementById('leaderModal').style.display = 'flex';
+        document.getElementById("ldrId").value = "";
+        document.getElementById("ldrRole").value = "";
+        document.getElementById("ldrName").value = "";
+        document.getElementById("ldrPhone").value = "";
+        document.getElementById("ldrEmoji").value = "";
+        document.getElementById("leaderModal").style.display = "flex";
     }
+    function closeLeaderModal() { document.getElementById("leaderModal").style.display = "none"; }
 
-    function closeLeaderModal() {
-        document.getElementById('leaderModal').style.display = 'none';
-    }
-
-    function saveLeader() {
-        const id = document.getElementById('ldrId').value;
-        const newLeader = {
-            id: id ? parseInt(id) : Date.now(),
-            role: document.getElementById('ldrRole').value,
-            name: document.getElementById('ldrName').value,
-            phone: document.getElementById('ldrPhone').value,
-            emoji: document.getElementById('ldrEmoji').value
+    async function saveLeader() {
+        const payload = {
+            role_title: document.getElementById("ldrRole").value,
+            name: document.getElementById("ldrName").value,
+            phone: document.getElementById("ldrPhone").value,
+            emoji: document.getElementById("ldrEmoji").value
         };
-
-        if(!appData.general.leadership) appData.general.leadership = [];
-        appData.general.leadership.push(newLeader);
-        saveData();
+        const { error } = await db.from("leadership").insert(payload);
+        if (error) { alert(error.message); return; }
         closeLeaderModal();
+        await loadAll();
     }
 
-    function deleteLeader(id) {
-        if(confirm("Delete this leader?")) {
-            appData.general.leadership = appData.general.leadership.filter(l => l.id !== id);
-            saveData();
-        }
+    async function deleteLeader(id) {
+        if (!confirm("Delete this leader?")) return;
+        await db.from("leadership").delete().eq("id", id);
+        await loadAll();
     }
 
-    // Service Opportunity Functions
-    function addSite() {
-        if (!isAdmin) return;
-        const title = prompt("Site Name (e.g. Local Food Bank):");
-        if (!title) return;
-        const desc = prompt("Site Description/Details:");
-        const contact = prompt("Contact Info:");
-        
-        if (!appData.service) appData.service = { sites: [], gatherings: [] };
-        if (!appData.service.sites) appData.service.sites = [];
-        
-        appData.service.sites.push({ id: Date.now(), title, desc, contact });
-        saveData();
+    // Pending invites (admin only)
+    function renderInvites() {
+        const el = document.getElementById("invitesList");
+        if (!el) return;
+        const pending = state.invites.filter((i) => !i.used_at);
+        if (pending.length === 0) { el.innerHTML = `<p style="color:var(--text-muted);">No pending invites.</p>`; return; }
+        el.innerHTML = pending.map((inv) => `
+            <div class="invite-row">
+                <span>${esc(inv.email)} ${inv.is_admin_invite ? "(admin)" : ""} <span class="invite-code">${esc(inv.code)}</span></span>
+                <button class="btn" onclick="revokeInvite('${inv.id}')" style="background:var(--danger); color:white; padding:4px 10px; font-size:0.8rem;">Revoke</button>
+            </div>`).join("");
     }
 
-    function deleteSite(id) {
-        if (!isAdmin) return;
-        if(confirm("Delete this approved site?")) {
-            appData.service.sites = appData.service.sites.filter(s => s.id !== id);
-            saveData();
-        }
+    function openInviteModal() {
+        const select = document.getElementById("invClaim");
+        select.innerHTML = `<option value="">— New Missionary (blank profile) —</option>`;
+        state.missionaries.filter((m) => !m.auth_user_id).forEach((m) => {
+            select.innerHTML += `<option value="${m.id}">${esc(m.name)}</option>`;
+        });
+        document.getElementById("invEmail").value = "";
+        document.getElementById("invIsAdmin").checked = false;
+        document.getElementById("inviteError").textContent = "";
+        document.getElementById("inviteModal").style.display = "flex";
+    }
+    function closeInviteModal() { document.getElementById("inviteModal").style.display = "none"; }
+
+    async function submitInvite() {
+        const email = document.getElementById("invEmail").value.trim();
+        const claimId = document.getElementById("invClaim").value || null;
+        const isAdminInv = document.getElementById("invIsAdmin").checked;
+        const errEl = document.getElementById("inviteError");
+        if (!email) { errEl.textContent = "Enter an email."; return; }
+
+        const { data, error } = await db.rpc("create_invite", {
+            p_email: email, p_is_admin: isAdminInv, p_claim_missionary_id: claimId
+        });
+        if (error) { errEl.textContent = error.message; return; }
+        closeInviteModal();
+        await loadAll();
+        alert(`Invite created for ${email}.\n\nCode: ${data}\n\nShare the email + this code with them so they can create their account.`);
     }
 
-    // Gathering Modal Functions
-    function openGatheringModal(id = null) {
-        const modal = document.getElementById('gatheringModal');
-        
-        if (id) {
-            const g = appData.service.gatherings.find(x => x.id === id);
-            document.getElementById('gatheringModalTitle').innerText = "Edit Gathering / Idea";
-            document.getElementById('gathId').value = g.id;
-            document.getElementById('gathTitle').value = g.title;
-            document.getElementById('gathDate').value = g.date;
-            document.getElementById('gathDesc').value = g.desc;
-            document.getElementById('gathEmoji').value = g.emoji || "";
-            document.getElementById('gathColor').value = g.color || "#d4af37";
-        } else {
-            document.getElementById('gatheringModalTitle').innerText = "Add Gathering / Idea";
-            document.getElementById('gathId').value = "";
-            document.getElementById('gathTitle').value = "";
-            document.getElementById('gathDate').value = "";
-            document.getElementById('gathDesc').value = "";
-            document.getElementById('gathEmoji').value = "";
-            document.getElementById('gathColor').value = "#d4af37";
-        }
-        modal.style.display = 'flex';
+    async function revokeInvite(id) {
+        if (!confirm("Revoke this invite?")) return;
+        await db.from("invites").delete().eq("id", id);
+        await loadAll();
     }
 
-    function closeGatheringModal() {
-        document.getElementById('gatheringModal').style.display = 'none';
+    // General notes
+    function renderGeneralNotes() {
+        const el = document.getElementById("generalNotesContainer");
+        el.innerHTML = "";
+        state.generalNotes.forEach((note) => {
+            const isUrgent = note.color && note.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
+            const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
+            el.innerHTML += `
+                <div class="card" style="${borderStyle}">
+                    <h3 style="color: var(--accent); display:flex; align-items:center;">${esc(note.title)} ${badge}</h3>
+                    <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
+                    <div class="admin-controls">
+                        <button class="btn" onclick="deleteGeneralNote('${note.id}')" style="background:var(--danger); color:white; margin-top:10px; padding:5px 10px; font-size:0.85rem;">Delete Section</button>
+                    </div>
+                </div>`;
+        });
     }
 
-    function saveGathering() {
-        const id = document.getElementById('gathId').value;
-        const newGathering = {
-            id: id ? parseInt(id) : Date.now(),
-            title: document.getElementById('gathTitle').value,
-            date: document.getElementById('gathDate').value,
-            desc: document.getElementById('gathDesc').value,
-            emoji: document.getElementById('gathEmoji').value,
-            color: document.getElementById('gathColor').value
-        };
-
-        if (!appData.service) appData.service = { sites: [], gatherings: [] };
-        if (!appData.service.gatherings) appData.service.gatherings = [];
-
-        if (id) {
-            const index = appData.service.gatherings.findIndex(g => g.id === parseInt(id));
-            appData.service.gatherings[index] = newGathering;
-        } else {
-            appData.service.gatherings.push(newGathering);
-        }
-        
-        saveData();
-        closeGatheringModal();
-    }
-
-    function deleteGathering(id) {
-        if(confirm("Delete this gathering/idea?")) {
-            appData.service.gatherings = appData.service.gatherings.filter(g => g.id !== id);
-            saveData();
-        }
-    }
-
-    // Custom Notes Functions (General Tab)
-    function addGeneralNote() {
+    async function addGeneralNote() {
         const title = prompt("Enter a title for this new section (e.g., 'Zone Goals'):");
-        if (title) {
-            const color = prompt("Enter a color for this note (type 'red' for Mandatory/Urgent, or leave blank):", "");
-            if (!appData.general.customNotes) appData.general.customNotes = [];
-            appData.general.customNotes.push({ 
-                id: Date.now(), 
-                title: title, 
-                content: "Click here to add notes...",
-                color: color
-            });
-            saveData();
-        }
+        if (!title) return;
+        const color = prompt("Enter a color for this note (type 'red' for Mandatory/Urgent, or leave blank):", "");
+        await db.from("general_notes").insert({
+            title, content_html: "Click here to add notes...", color, created_by: myMissionaryId()
+        });
+        await loadAll();
     }
 
-    function deleteGeneralNote(id) {
-        if(confirm("Are you sure you want to delete this note section?")) {
-            appData.general.customNotes = appData.general.customNotes.filter(n => n.id !== id);
-            saveData();
-        }
+    async function deleteGeneralNote(id) {
+        if (!confirm("Are you sure you want to delete this note section?")) return;
+        await db.from("general_notes").delete().eq("id", id);
+        await loadAll();
     }
 
-    // Calendar Functions
-    function addCalendarEvent() {
+    async function updateGeneralNoteContent(id, html) {
+        if (!state.isAdmin) return;
+        await db.from("general_notes").update({ content_html: html }).eq("id", id);
+    }
+
+    // Calendar
+    function renderCalendar() {
+        const el = document.getElementById("calendarList");
+        el.innerHTML = "";
+        state.calendarEvents.forEach((ev) => {
+            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
+            const borderStyle = ev.color ? `border-left-color: ${esc(ev.color)};` : "";
+            const rsvps = ev.rsvps || [];
+            const rsvpHtml = rsvps.length > 0
+                ? rsvps.map((r) => {
+                    const canRemove = state.isAdmin || r.missionary_id === myMissionaryId();
+                    const removeBtn = canRemove ? `<span class="rsvp-remove" onclick="removeRsvp('${r.id}')">&times;</span>` : "";
+                    return `<span class="rsvp-badge">${esc(r.name)} ${removeBtn}</span>`;
+                }).join("")
+                : "None yet.";
+
+            el.innerHTML += `
+                <div class="card" style="${borderStyle}">
+                    <h3 style="color:var(--primary); margin-bottom: 10px;">${esc(ev.title)} ${badge}</h3>
+                    <p style="margin-bottom: 5px;"><strong style="color:white;">Date:</strong> ${esc(ev.event_date)}</p>
+                    <p style="color:var(--text-muted); margin-top:0;">${esc(ev.description)}</p>
+
+                    <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: var(--accent); font-size: 0.95rem;">RSVPs (${rsvps.length})</strong>
+                            <button class="btn" onclick="addRsvp('${ev.id}')" style="padding: 4px 10px; font-size: 0.8rem; background: var(--secondary); color: white; border: 1px solid #444;">+ RSVP</button>
+                        </div>
+                        <div style="color: var(--text-muted);">${rsvpHtml}</div>
+                    </div>
+
+                    <div class="admin-controls" style="margin-top: 15px;">
+                        <button class="btn" onclick="deleteEvent('${ev.id}')" style="background:var(--danger); color:white;">Delete Event</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addCalendarEvent() {
         const title = prompt("Event Title:");
         if (!title) return;
         const date = prompt("Event Date (e.g., Oct 24):");
         const desc = prompt("Event Description:");
         const color = prompt("Event Color (type 'red' for Mandatory/Urgent, or leave blank):", "");
-        appData.calendar.push({ id: Date.now(), title, date, desc, color, rsvps: [] });
-        saveData();
-    }
-    
-    function deleteEvent(id) {
-        if(confirm("Delete this event?")) {
-            appData.calendar = appData.calendar.filter(e => e.id !== id);
-            saveData();
-        }
+        await db.from("calendar_events").insert({ title, event_date: date, description: desc, color });
+        await loadAll();
     }
 
-    // Companionship Functions
-    function addCompanionship() {
+    async function deleteEvent(id) {
+        if (!confirm("Delete this event?")) return;
+        await db.from("calendar_events").delete().eq("id", id);
+        await loadAll();
+    }
+
+    async function addRsvp(eventId) {
+        if (!myMissionaryId()) { alert("Finish your profile before RSVPing."); return; }
+        const { error } = await db.from("event_rsvps").insert({ event_id: eventId, missionary_id: myMissionaryId() });
+        if (error && !error.message.includes("duplicate")) alert(error.message);
+        await loadAll();
+    }
+
+    async function removeRsvp(rsvpId) {
+        if (!confirm("Are you sure you want to remove this RSVP?")) return;
+        await db.from("event_rsvps").delete().eq("id", rsvpId);
+        await loadAll();
+    }
+
+    // Service sites
+    function renderSites() {
+        const el = document.getElementById("sitesList");
+        el.innerHTML = "";
+        state.serviceSites.forEach((site) => {
+            el.innerHTML += `
+                <div class="list-item">
+                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${esc(site.title)}</h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(site.description)}</p>
+                    <p style="margin:0; font-size: 0.85em; color:var(--text-muted);">📞 Contact: ${esc(site.contact)}</p>
+                    <div class="admin-controls">
+                        <button class="btn" onclick="deleteSite('${site.id}')" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem; margin-top: 10px;">Delete Site</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addSite() {
+        const title = prompt("Site Name (e.g. Local Food Bank):");
+        if (!title) return;
+        const desc = prompt("Site Description/Details:");
+        const contact = prompt("Contact Info:");
+        await db.from("service_sites").insert({ title, description: desc, contact });
+        await loadAll();
+    }
+
+    async function deleteSite(id) {
+        if (!confirm("Delete this approved site?")) return;
+        await db.from("service_sites").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Gatherings
+    function renderGatherings() {
+        const el = document.getElementById("gatheringsList");
+        el.innerHTML = "";
+        state.gatherings.forEach((g) => {
+            const gColor = g.color || "var(--primary)";
+            const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${esc(g.emoji)}</span>` : "";
+            const canEdit = state.isAdmin || g.created_by === myMissionaryId();
+            el.innerHTML += `
+                <div class="list-item" style="border-left: 4px solid ${esc(gColor)}; padding-left: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;">
+                    <h4 style="color:var(--accent); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
+                        ${gEmoji} ${esc(g.title)}
+                    </h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">🗓️ ${esc(g.date_text)}</p>
+                    <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(g.description)}</p>
+                    ${canEdit ? `
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn" onclick="openGatheringModal('${g.id}')" style="background:var(--secondary); color:white; padding: 4px 10px; font-size: 0.8rem; border: 1px solid #444;">Edit Idea</button>
+                        <button class="btn" onclick="deleteGathering('${g.id}')" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
+                    </div>` : ""}
+                </div>`;
+        });
+    }
+
+    function openGatheringModal(id = null) {
+        const modal = document.getElementById("gatheringModal");
+        if (id) {
+            const g = state.gatherings.find((x) => x.id === id);
+            document.getElementById("gatheringModalTitle").innerText = "Edit Gathering / Idea";
+            document.getElementById("gathId").value = g.id;
+            document.getElementById("gathTitle").value = g.title;
+            document.getElementById("gathDate").value = g.date_text;
+            document.getElementById("gathDesc").value = g.description;
+            document.getElementById("gathEmoji").value = g.emoji || "";
+            document.getElementById("gathColor").value = g.color || "#d4af37";
+        } else {
+            document.getElementById("gatheringModalTitle").innerText = "Add Gathering / Idea";
+            document.getElementById("gathId").value = "";
+            document.getElementById("gathTitle").value = "";
+            document.getElementById("gathDate").value = "";
+            document.getElementById("gathDesc").value = "";
+            document.getElementById("gathEmoji").value = "";
+            document.getElementById("gathColor").value = "#d4af37";
+        }
+        modal.style.display = "flex";
+    }
+    function closeGatheringModal() { document.getElementById("gatheringModal").style.display = "none"; }
+
+    async function saveGathering() {
+        const id = document.getElementById("gathId").value;
+        const payload = {
+            title: document.getElementById("gathTitle").value,
+            date_text: document.getElementById("gathDate").value,
+            description: document.getElementById("gathDesc").value,
+            emoji: document.getElementById("gathEmoji").value,
+            color: document.getElementById("gathColor").value
+        };
+        let error;
+        if (id) {
+            ({ error } = await db.from("gatherings").update(payload).eq("id", id));
+        } else {
+            payload.created_by = myMissionaryId();
+            ({ error } = await db.from("gatherings").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeGatheringModal();
+        await loadAll();
+    }
+
+    async function deleteGathering(id) {
+        if (!confirm("Delete this gathering/idea?")) return;
+        await db.from("gatherings").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Resources
+    function renderResources() {
+        const el = document.getElementById("resourcesList");
+        el.innerHTML = "";
+        state.resources.forEach((res) => {
+            el.innerHTML += `
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <h3 style="color:var(--primary); margin-bottom: 15px; text-align: center;">${esc(res.title)}</h3>
+                    <a href="${esc(res.url)}" target="_blank" rel="noopener noreferrer" class="resource-link">Open Document</a>
+                    <div class="admin-controls">
+                        <button class="btn" onclick="deleteResource('${res.id}')" style="background:var(--danger); color:white; width: 100%;">Delete</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addResource() {
+        const title = prompt("Document Title (e.g., Zone Map, July Training):");
+        if (!title) return;
+        const url = prompt("Paste the Share Link (Google Drive, Dropbox, OneDrive, etc.):");
+        if (!url) return;
+        await db.from("resources").insert({ title, url });
+        await loadAll();
+    }
+
+    async function deleteResource(id) {
+        if (!confirm("Are you sure you want to delete this resource link?")) return;
+        await db.from("resources").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Districts
+    function renderDistricts() {
+        const el = document.getElementById("districtsList");
+        el.innerHTML = "";
+        state.districts.forEach((d) => {
+            el.innerHTML += `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color: var(--accent);">${esc(d.name)}</h3>
+                        <div class="admin-controls" style="margin:0; display:flex; gap:8px;">
+                            <button class="btn" onclick="renameDistrict('${d.id}')" style="background:var(--secondary); color:white; padding:4px 10px; font-size:0.8rem; border:1px solid #444;">Rename</button>
+                            <button class="btn" onclick="deleteDistrict('${d.id}')" style="background:var(--danger); color:white; padding:4px 10px; font-size:0.8rem;">Delete</button>
+                        </div>
+                    </div>
+                    <div class="editable district-content" data-id="${d.id}">${d.content_html || ""}</div>
+                </div>`;
+        });
+    }
+
+    async function addDistrict() {
+        const name = prompt("District name (e.g., District 3):");
+        if (!name) return;
+        await db.from("districts").insert({ name, content_html: "" });
+        await loadAll();
+    }
+
+    async function renameDistrict(id) {
+        const d = state.districts.find((x) => x.id === id);
+        const name = prompt("Rename district:", d?.name || "");
+        if (!name) return;
+        await db.from("districts").update({ name }).eq("id", id);
+        await loadAll();
+    }
+
+    async function deleteDistrict(id) {
+        if (!confirm("Delete this district?")) return;
+        await db.from("districts").delete().eq("id", id);
+        await loadAll();
+    }
+
+    async function updateDistrictContent(id, html) {
+        if (!state.isAdmin) return;
+        await db.from("districts").update({ content_html: html }).eq("id", id);
+    }
+
+    // Companionships
+    function renderCompanionships() {
+        const el = document.getElementById("companionshipsList");
+        el.innerHTML = "";
+        state.companionships.forEach((comp) => {
+            el.innerHTML += `
+                <div class="comp-block">
+                    ${esc(comp.names)}
+                    <div class="admin-controls" style="margin-top:10px;">
+                        <button class="btn" onclick="deleteCompanionship('${comp.id}')" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Remove</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addCompanionship() {
         const names = prompt("Enter Companionship Names (e.g., Elder Smith & Elder Jones):");
-        if (names) {
-            appData.companionships.push({ id: Date.now(), names });
-            saveData();
-        }
-    }
-    
-    function deleteCompanionship(id) {
-        if(confirm("Delete this companionship block?")) {
-            appData.companionships = appData.companionships.filter(c => c.id !== id);
-            saveData();
-        }
+        if (!names) return;
+        await db.from("companionships").insert({ names });
+        await loadAll();
     }
 
-    // Fun Cookies Function
-    function addCookie(event, id) {
-        // Anyone can add cookies, so no !isAdmin check here
-        
-        const m = appData.missionaries.find(m => m.id === id);
+    async function deleteCompanionship(id) {
+        if (!confirm("Delete this companionship block?")) return;
+        await db.from("companionships").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Search / filter (pure client-side DOM filtering, unchanged from before)
+    function filterMissionaries() {
+        const search = document.getElementById("missionarySearch");
+        if (!search) return;
+        const query = search.value.toLowerCase();
+        document.querySelectorAll(".missionary-card").forEach((card) => {
+            const nameEl = card.querySelector(".missionary-name");
+            if (nameEl) card.style.display = nameEl.innerText.toLowerCase().includes(query) ? "block" : "none";
+        });
+    }
+
+    function filterCompanionships() {
+        const search = document.getElementById("companionshipSearch");
+        if (!search) return;
+        const query = search.value.toLowerCase();
+        document.querySelectorAll(".comp-block").forEach((block) => {
+            block.style.display = block.innerText.toLowerCase().includes(query) ? "block" : "none";
+        });
+    }
+
+    // Missionaries
+    function renderMissionaries() {
+        const el = document.getElementById("missionaryList");
+        el.innerHTML = "";
+        state.missionaries.forEach((m) => {
+            const roleBadge = m.service_role ? `<div class="role-badge active">${esc(m.service_role)}</div>` : "";
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : esc(m.emoji || "👤");
+            const mColor = m.color || "var(--primary)";
+            const canEdit = state.isAdmin || m.auth_user_id === state.userId;
+
+            el.innerHTML += `
+                <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${esc(mColor)};">
+                    ${roleBadge}
+                    <div class="missionary-emoji" style="border-color: ${esc(mColor)};">${avatar}</div>
+                    <h3 class="missionary-name">${esc(m.name)}</h3>
+                    <div class="cookie-banner" id="banner-${m.id}">${esc(m.name)} has ${m.cookies || 0} cookies</div>
+
+                    <div class="cookies-container">
+                        <span class="cookie-score">🍪 <span id="score-${m.id}">${m.cookies || 0}</span></span>
+                        <button class="add-cookie" onclick="addCookie(event, '${m.id}')">+</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
+                    <p style="font-size: 0.95em; text-align: left; color: var(--text-muted); line-height:1.8;">
+                        <strong style="color:white;">Phone:</strong> ${esc(m.phone) || "N/A"}<br>
+                        <strong style="color:white;">Sites:</strong> ${esc(m.sites)}<br>
+                        <strong style="color:white;">Birthday:</strong> ${esc(m.birthday)}<br>
+                        <strong style="color:white;">Companion:</strong> ${esc(m.companion)}<br>
+                        <strong style="color:white;">District:</strong> ${esc(m.district)}
+                    </p>
+                    ${canEdit ? `<button class="btn" onclick="openProfileModal('${m.id}')" style="width:100%; margin-top:10px; background:var(--secondary); color:white; border: 1px solid #444;">Edit Profile</button>` : ""}
+                </div>`;
+        });
+    }
+
+    async function addCookie(event, id) {
+        const { error } = await db.rpc("add_cookie", { p_missionary_id: id });
+        if (error) { alert(error.message); return; }
+        const m = state.missionaries.find((x) => x.id === id);
         if (m) {
             m.cookies = (m.cookies || 0) + 1;
             document.getElementById(`score-${id}`).innerText = m.cookies;
             document.getElementById(`banner-${id}`).innerText = `${m.name} has ${m.cookies} cookies`;
-            saveData(); 
 
-            // Visual Animation
             const card = document.getElementById(`miss-card-${id}`);
-            const coin = document.createElement('div');
+            const coin = document.createElement("div");
             coin.innerText = "🍪";
             coin.className = "coin-anim";
-            
             const rect = event.target.getBoundingClientRect();
             const cardRect = card.getBoundingClientRect();
-            coin.style.left = (rect.left - cardRect.left) + 'px';
-            coin.style.top = (rect.top - cardRect.top) + 'px';
-            
+            coin.style.left = (rect.left - cardRect.left) + "px";
+            coin.style.top = (rect.top - cardRect.top) + "px";
             card.appendChild(coin);
             setTimeout(() => coin.remove(), 600);
         }
     }
 
-    // Profile Functions
-    function openProfileModal(id = null) {
-        const modal = document.getElementById('profileModal');
-        
-        document.getElementById('roleSelectorDiv').style.display = isAdmin ? 'block' : 'none';
+    let onboardingMode = false;
+
+    function openProfileModal(id = null, opts = {}) {
+        onboardingMode = !!opts.forced;
+        const modal = document.getElementById("profileModal");
+        document.getElementById("roleSelectorDiv").style.display = state.isAdmin ? "block" : "none";
+        document.getElementById("onboardingNotice").style.display = onboardingMode ? "block" : "none";
+        document.getElementById("profCancelBtn").style.display = onboardingMode ? "none" : "inline-block";
+        document.getElementById("profPhotoFile").value = "";
 
         if (id) {
-            const m = appData.missionaries.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = "Edit Profile";
-            document.getElementById('profId').value = m.id;
-            document.getElementById('profName').value = m.name;
-            document.getElementById('profEmoji').value = m.emoji || "";
-            document.getElementById('profColor').value = m.color || "#d4af37";
-            document.getElementById('profRole').value = m.role || "";
-            document.getElementById('profPhone').value = m.phone || "";
-            document.getElementById('profSites').value = m.sites;
-            document.getElementById('profBirthday').value = m.birthday;
-            document.getElementById('profCompanion').value = m.companion;
-            document.getElementById('profDistrict').value = m.district;
+            const m = state.missionaries.find((x) => x.id === id) || state.me;
+            document.getElementById("modalTitle").innerText = onboardingMode ? "Complete Your Profile" : "Edit Profile";
+            document.getElementById("profId").value = m.id;
+            document.getElementById("profName").value = m.name;
+            document.getElementById("profEmoji").value = m.emoji || "";
+            document.getElementById("profColor").value = m.color || "#d4af37";
+            document.getElementById("profRole").value = m.service_role || "";
+            document.getElementById("profPhone").value = m.phone || "";
+            document.getElementById("profSites").value = m.sites || "";
+            document.getElementById("profBirthday").value = m.birthday || "";
+            document.getElementById("profCompanion").value = m.companion || "";
+            document.getElementById("profDistrict").value = m.district || "";
         } else {
-            document.getElementById('modalTitle').innerText = "Add Missionary";
-            document.getElementById('profId').value = "";
-            document.getElementById('profName').value = "";
-            document.getElementById('profEmoji').value = "";
-            document.getElementById('profColor').value = "#d4af37";
-            document.getElementById('profRole').value = "";
-            document.getElementById('profPhone').value = "";
-            document.getElementById('profSites').value = "";
-            document.getElementById('profBirthday').value = "";
-            document.getElementById('profCompanion').value = "";
-            document.getElementById('profDistrict').value = "";
+            document.getElementById("modalTitle").innerText = "Add Directory Placeholder";
+            document.getElementById("profId").value = "";
+            document.getElementById("profName").value = "";
+            document.getElementById("profEmoji").value = "";
+            document.getElementById("profColor").value = "#d4af37";
+            document.getElementById("profRole").value = "";
+            document.getElementById("profPhone").value = "";
+            document.getElementById("profSites").value = "";
+            document.getElementById("profBirthday").value = "";
+            document.getElementById("profCompanion").value = "";
+            document.getElementById("profDistrict").value = "";
         }
-        modal.style.display = 'flex';
+        document.getElementById("profileError").textContent = "";
+        modal.style.display = "flex";
     }
 
     function closeProfileModal() {
-        document.getElementById('profileModal').style.display = 'none';
+        if (onboardingMode) return; // must save to dismiss during forced onboarding
+        document.getElementById("profileModal").style.display = "none";
     }
 
-    function saveProfile() {
-        const id = document.getElementById('profId').value;
-        const newProfile = {
-            id: id ? parseInt(id) : Date.now(),
-            name: document.getElementById('profName').value,
-            emoji: document.getElementById('profEmoji').value,
-            color: document.getElementById('profColor').value,
-            role: document.getElementById('profRole').value,
-            phone: document.getElementById('profPhone').value,
-            sites: document.getElementById('profSites').value,
-            birthday: document.getElementById('profBirthday').value,
-            companion: document.getElementById('profCompanion').value,
-            district: document.getElementById('profDistrict').value,
-            cookies: 0 
+    async function uploadPhoto(missionaryId, file) {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${missionaryId}/photo.${ext}`;
+        const { error: uploadError } = await db.storage.from("missionary-photos").upload(path, file, {
+            upsert: true, cacheControl: "3600"
+        });
+        if (uploadError) throw uploadError;
+        const { data } = db.storage.from("missionary-photos").getPublicUrl(path);
+        const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
+        const { error: updateError } = await db.from("missionaries").update({ photo_url: publicUrl }).eq("id", missionaryId);
+        if (updateError) throw updateError;
+    }
+
+    async function saveProfile() {
+        const id = document.getElementById("profId").value;
+        const errEl = document.getElementById("profileError");
+        const phone = document.getElementById("profPhone").value.trim();
+
+        if (onboardingMode && !phone) {
+            errEl.textContent = "Please add at least a phone number before continuing.";
+            return;
+        }
+
+        const payload = {
+            name: document.getElementById("profName").value,
+            emoji: document.getElementById("profEmoji").value,
+            color: document.getElementById("profColor").value,
+            phone,
+            sites: document.getElementById("profSites").value,
+            birthday: document.getElementById("profBirthday").value,
+            companion: document.getElementById("profCompanion").value,
+            district: document.getElementById("profDistrict").value
         };
+        if (state.isAdmin) payload.service_role = document.getElementById("profRole").value || null;
 
+        let targetId = id;
+        let error;
         if (id) {
-            const index = appData.missionaries.findIndex(m => m.id === parseInt(id));
-            newProfile.cookies = appData.missionaries[index].cookies || 0; 
-            
-            if(!isAdmin) newProfile.role = appData.missionaries[index].role;
-            
-            appData.missionaries[index] = newProfile;
+            ({ error } = await db.from("missionaries").update(payload).eq("id", id));
         } else {
-            if(!isAdmin) newProfile.role = ""; 
-            appData.missionaries.push(newProfile);
+            const { data, error: insertError } = await db.from("missionaries").insert(payload).select().single();
+            error = insertError;
+            targetId = data?.id;
         }
-        
-        saveData();
-        closeProfileModal();
+        if (error) { errEl.textContent = error.message; return; }
+
+        const file = document.getElementById("profPhotoFile").files[0];
+        if (file && targetId) {
+            try {
+                await uploadPhoto(targetId, file);
+            } catch (e) {
+                errEl.textContent = `Profile saved, but photo upload failed: ${e.message}`;
+                await loadAll();
+                return;
+            }
+        }
+
+        onboardingMode = false;
+        document.getElementById("profileModal").style.display = "none";
+        await loadAll();
     }
 
-    function deleteProfile() {
-        const id = document.getElementById('profId').value;
-        if (id && confirm("Are you sure you want to delete this missionary?")) {
-            appData.missionaries = appData.missionaries.filter(m => m.id !== parseInt(id));
-            saveData();
-            closeProfileModal();
-        }
+    async function deleteProfile() {
+        const id = document.getElementById("profId").value;
+        if (!id || !confirm("Are you sure you want to delete this missionary?")) return;
+        const { error } = await db.from("missionaries").delete().eq("id", id);
+        if (error) { alert(error.message); return; }
+        document.getElementById("profileModal").style.display = "none";
+        await loadAll();
     }
-
-    // --- On Load Execution ---
-    window.onload = function() {
-        if (sessionStorage.getItem('zoneHubAccess') === 'granted') {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            initApp();
-        }
-    };
-
 </script>
 </body>
 </html>
