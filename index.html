@@ -494,61 +494,14 @@
 </head>
 <body>
 
-<!-- Login / Redeem Invite Screen -->
+<!-- Login Screen -->
 <div id="loginScreen">
     <div class="card" style="margin: 20px 0; text-align: center; width: 90%; max-width: 380px;">
-        <h2 style="color: var(--primary); margin-bottom: 5px;">Zone Hub</h2>
-
-        <!-- Sign In Form -->
-        <div id="signInForm">
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Sign in to continue.</p>
-            <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
-            <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;" onkeypress="if(event.key === 'Enter') doSignIn()">
-            <button class="btn" style="width: 100%;" onclick="doSignIn()">Sign In</button>
-            <p id="signInError" class="error-text"></p>
-            <p style="margin-top: 20px; font-size: 0.9rem;">
-                Have an invite code? <a href="#" style="color: var(--primary);" onclick="toggleAuthMode('redeem'); return false;">Create your account</a>
-            </p>
-            <p style="margin-top: 8px; font-size: 0.9rem;">
-                <a href="#" style="color: var(--text-muted);" onclick="toggleAuthMode('forgot'); return false;">Forgot your password?</a>
-            </p>
-        </div>
-
-        <!-- Redeem Invite Form -->
-        <div id="redeemForm" style="display:none;">
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter the invite code your zone leader gave you.</p>
-            <input type="email" id="inviteEmail" placeholder="Email your invite was sent to" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
-            <input type="text" id="inviteCode" placeholder="Invite Code" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit; text-transform:uppercase;">
-            <input type="password" id="invitePassword" placeholder="Choose a Password" autocomplete="new-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
-            <button class="btn" style="width: 100%;" onclick="doRedeemInvite()">Create Account</button>
-            <p id="redeemError" class="error-text"></p>
-            <p id="redeemNotice" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; display:none;">Check your email to confirm your account, then sign in.</p>
-            <p style="margin-top: 20px; font-size: 0.9rem;">
-                Already have an account? <a href="#" style="color: var(--primary);" onclick="toggleAuthMode('signin'); return false;">Sign in</a>
-            </p>
-        </div>
-
-        <!-- Forgot Password Form -->
-        <div id="forgotForm" style="display:none;">
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter your email and we'll send you a reset link.</p>
-            <input type="email" id="forgotEmail" placeholder="Email" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
-            <button class="btn" style="width: 100%;" onclick="requestPasswordReset()">Send Reset Link</button>
-            <p id="forgotError" class="error-text"></p>
-            <p id="forgotNotice" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; display:none;">Check your email for a reset link.</p>
-            <p style="margin-top: 20px; font-size: 0.9rem;">
-                <a href="#" style="color: var(--primary);" onclick="toggleAuthMode('signin'); return false;">Back to sign in</a>
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- Set New Password Screen (shown after clicking a reset-link email) -->
-<div id="recoveryScreen" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-dark); align-items: center; justify-content: center; z-index: 10000;">
-    <div class="card" style="margin: 0; text-align: center; width: 90%; max-width: 380px;">
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Set a New Password</h2>
-        <input type="password" id="newPassword" placeholder="New Password" autocomplete="new-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;">
-        <button class="btn" style="width: 100%;" onclick="submitNewPassword()">Save New Password</button>
-        <p id="recoveryError" class="error-text"></p>
+        <h2 style="color: var(--primary); margin-bottom: 5px;">Zone Hub Login</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Please enter the site password to continue.</p>
+        <input type="password" id="sitePassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;" onkeypress="if(event.key === 'Enter') doSignIn()">
+        <button class="btn" style="width: 100%;" onclick="doSignIn()">Enter Site</button>
+        <p id="signInError" class="error-text"></p>
     </div>
 </div>
 
@@ -557,7 +510,7 @@
     <header>
         <h1>Zone Hub</h1>
         <div class="header-controls">
-            <button class="btn admin-controls-inline" onclick="openInviteModal()" style="background: var(--secondary); color: white; border: 1px solid #444;">+ Invite Missionary</button>
+            <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
             <button class="admin-btn" onclick="signOut()">Sign Out</button>
         </div>
     </header>
@@ -588,11 +541,6 @@
                     <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
                 </div>
                 <div id="leadersList"></div>
-            </div>
-
-            <div class="card admin-controls">
-                <h3 style="color: var(--accent);">Pending Invites</h3>
-                <div id="invitesList"></div>
             </div>
 
             <div class="admin-controls" style="margin: 30px 0 15px 0;">
@@ -668,9 +616,7 @@
         <!-- Missionaries Tab -->
         <div id="missionaries" class="tab-content">
             <h2>Missionary Profiles</h2>
-            <div class="admin-controls" style="margin-bottom: 20px;">
-                <button class="btn" onclick="openProfileModal()" style="background: var(--accent); color: black;">+ Add Directory Placeholder</button>
-            </div>
+            <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
 
             <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
 
@@ -731,40 +677,11 @@
         </div>
     </div>
 
-    <!-- Invite Modal -->
-    <div id="inviteModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color: var(--accent); margin-top:0;">Invite Missionary</h2>
-
-            <label>Email</label>
-            <input type="email" id="invEmail" placeholder="their@email.com">
-
-            <label>Claims Which Directory Entry?</label>
-            <select id="invClaim">
-                <option value="">— New Missionary (blank profile) —</option>
-            </select>
-            <p class="field-hint">Pick their existing entry if they're already on the zone list, so their invite links up to their existing info.</p>
-
-            <div class="checkbox-row">
-                <input type="checkbox" id="invIsAdmin">
-                <label style="margin-top:0;" for="invIsAdmin">Make this person an admin</label>
-            </div>
-
-            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" onclick="submitInvite()" style="background: var(--primary);">Create Invite</button>
-                <button class="btn" onclick="closeInviteModal()" style="background: var(--secondary); color: white;">Cancel</button>
-            </div>
-            <p id="inviteError" class="error-text"></p>
-        </div>
-    </div>
-
     <!-- Profile Modal -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle" style="color: var(--accent); margin-top:0;">Edit Profile</h2>
             <input type="hidden" id="profId">
-
-            <p id="onboardingNotice" style="color: var(--primary); font-weight: bold; display:none;">Welcome! Please finish filling out your profile.</p>
 
             <label>Name</label>
             <input type="text" id="profName" placeholder="e.g. Elder Smith">
@@ -824,6 +741,14 @@
         auth: { persistSession: true, autoRefreshToken: true }
     });
 
+    // Two shared logins back the site/admin passwords -- everyone who knows
+    // the site password signs in as the same account, and "Admin" re-signs-in
+    // as a second shared account whose missionaries row has app_role='admin'.
+    // Real RLS on the server (not this constant) is what actually enforces
+    // who can do what -- these are just which account a password maps to.
+    const SITE_LOGIN_EMAIL = "missionary@zonehub.pgmissionaries.internal";
+    const ADMIN_LOGIN_EMAIL = "admin@zonehub.pgmissionaries.internal";
+
     // App State -- populated from Supabase, never trusted for authorization
     // (RLS on the server is what actually enforces who can do what).
     let state = {
@@ -839,8 +764,7 @@
         districts: [],
         companionships: [],
         generalNotes: [],
-        meetingsHtml: "",
-        invites: []
+        meetingsHtml: ""
     };
 
     function esc(str) {
@@ -849,78 +773,29 @@
         }[c]));
     }
 
-    function myMissionaryId() {
-        return state.me ? state.me.id : null;
-    }
-
     // --- Auth ---
 
-    function toggleAuthMode(mode) {
-        document.getElementById("signInForm").style.display = mode === "signin" ? "block" : "none";
-        document.getElementById("redeemForm").style.display = mode === "redeem" ? "block" : "none";
-        document.getElementById("forgotForm").style.display = mode === "forgot" ? "block" : "none";
-    }
-
-    async function requestPasswordReset() {
-        const email = document.getElementById("forgotEmail").value.trim();
-        const errEl = document.getElementById("forgotError");
-        errEl.textContent = "";
-        if (!email) { errEl.textContent = "Enter your email."; return; }
-        const { error } = await db.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + window.location.pathname
-        });
-        if (error) { errEl.textContent = error.message; return; }
-        document.getElementById("forgotNotice").style.display = "block";
-    }
-
-    async function submitNewPassword() {
-        const password = document.getElementById("newPassword").value;
-        const errEl = document.getElementById("recoveryError");
-        errEl.textContent = "";
-        if (!password || password.length < 6) {
-            errEl.textContent = "Password must be at least 6 characters.";
-            return;
-        }
-        const { error } = await db.auth.updateUser({ password });
-        if (error) { errEl.textContent = error.message; return; }
-        document.getElementById("recoveryScreen").style.display = "none";
-        // A fresh session now exists -- onAuthStateChange's SIGNED_IN handling takes it from here.
-    }
-
     async function doSignIn() {
-        const email = document.getElementById("loginEmail").value.trim();
-        const password = document.getElementById("loginPassword").value;
+        const password = document.getElementById("sitePassword").value;
         const errEl = document.getElementById("signInError");
         errEl.textContent = "";
-        const { error } = await db.auth.signInWithPassword({ email, password });
-        if (error) errEl.textContent = error.message;
+        const { error } = await db.auth.signInWithPassword({ email: SITE_LOGIN_EMAIL, password });
+        if (error) errEl.textContent = "Incorrect password.";
     }
 
-    async function doRedeemInvite() {
-        const email = document.getElementById("inviteEmail").value.trim();
-        const code = document.getElementById("inviteCode").value.trim().toUpperCase();
-        const password = document.getElementById("invitePassword").value;
-        const errEl = document.getElementById("redeemError");
-        errEl.textContent = "";
-        if (!email || !code || !password) {
-            errEl.textContent = "Fill in every field.";
+    // Admin toggle: "Admin" re-authenticates as the shared admin account
+    // (a real, separate session -- not a client-side flag -- since RLS keys
+    // off who's actually signed in). "Lock" signs all the way out, since
+    // there's no client-stored site password to silently sign back in with.
+    async function toggleAdmin() {
+        if (state.isAdmin) {
+            await signOut();
             return;
         }
-        const { data, error } = await db.auth.signUp({
-            email, password,
-            options: { data: { invite_code: code } }
-        });
-        if (error) {
-            errEl.textContent = error.message.includes("Database error")
-                ? "That invite code doesn't match, was already used, or has expired."
-                : error.message;
-            return;
-        }
-        if (data.session) {
-            // Email confirmation is off for this project -- signed in immediately.
-            return;
-        }
-        document.getElementById("redeemNotice").style.display = "block";
+        const password = prompt("Enter the Zone Admin Password:");
+        if (password === null) return;
+        const { error } = await db.auth.signInWithPassword({ email: ADMIN_LOGIN_EMAIL, password });
+        if (error) alert("Incorrect admin password.");
     }
 
     async function signOut() {
@@ -943,19 +818,12 @@
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("appContent").style.display = "block";
             await loadAll();
-            maybePromptOnboarding();
         } finally {
             entering = false;
         }
     }
 
     db.auth.onAuthStateChange((event, session) => {
-        if (event === "PASSWORD_RECOVERY") {
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("appContent").style.display = "none";
-            document.getElementById("recoveryScreen").style.display = "flex";
-            return;
-        }
         if (session?.user) {
             enterApp(session.user.id);
         } else {
@@ -974,7 +842,7 @@
     async function loadAll() {
         const [
             meRes, missRes, leadRes, calRes, rsvpRes, sitesRes, gatherRes,
-            resRes, distRes, compRes, notesRes, infoRes, invRes
+            resRes, distRes, compRes, notesRes, infoRes
         ] = await Promise.all([
             db.from("missionaries").select("*").eq("auth_user_id", state.userId).maybeSingle(),
             db.from("missionaries").select("*").order("name"),
@@ -987,8 +855,7 @@
             db.from("districts").select("*").order("created_at"),
             db.from("companionships").select("*").order("created_at"),
             db.from("general_notes").select("*").order("created_at"),
-            db.from("general_info").select("*").maybeSingle(),
-            db.from("invites").select("*").order("created_at")
+            db.from("general_info").select("*").maybeSingle()
         ]);
 
         state.me = meRes.data ?? null;
@@ -1002,7 +869,6 @@
         state.companionships = compRes.data ?? [];
         state.generalNotes = notesRes.data ?? [];
         state.meetingsHtml = infoRes.data?.meetings_html ?? "";
-        state.invites = invRes.data ?? [];
 
         const rsvpsByEvent = {};
         (rsvpRes.data ?? []).forEach((r) => {
@@ -1011,18 +877,11 @@
         state.calendarEvents = (calRes.data ?? []).map((ev) => ({ ...ev, rsvps: rsvpsByEvent[ev.id] || [] }));
 
         document.body.classList.toggle("admin-mode", state.isAdmin);
+        const adminBtn = document.getElementById("adminBtn");
+        adminBtn.innerText = state.isAdmin ? "Lock" : "Admin";
+        adminBtn.style.background = state.isAdmin ? "var(--danger)" : "var(--accent)";
+        adminBtn.style.color = state.isAdmin ? "#fff" : "#000";
         renderApp();
-    }
-
-    function isProfileIncomplete(m) {
-        if (!m) return false;
-        return !m.phone && !m.sites && !m.birthday && !m.companion && !m.district;
-    }
-
-    function maybePromptOnboarding() {
-        if (state.me && isProfileIncomplete(state.me)) {
-            openProfileModal(state.me.id, { forced: true });
-        }
     }
 
     // --- Tab switching ---
@@ -1039,7 +898,6 @@
     function renderApp() {
         document.getElementById("meetingsText").innerHTML = state.meetingsHtml || "Click to add meeting info...";
         renderLeadership();
-        renderInvites();
         renderGeneralNotes();
         renderCalendar();
         renderSites();
@@ -1127,53 +985,6 @@
         await loadAll();
     }
 
-    // Pending invites (admin only)
-    function renderInvites() {
-        const el = document.getElementById("invitesList");
-        if (!el) return;
-        const pending = state.invites.filter((i) => !i.used_at);
-        if (pending.length === 0) { el.innerHTML = `<p style="color:var(--text-muted);">No pending invites.</p>`; return; }
-        el.innerHTML = pending.map((inv) => `
-            <div class="invite-row">
-                <span>${esc(inv.email)} ${inv.is_admin_invite ? "(admin)" : ""} <span class="invite-code">${esc(inv.code)}</span></span>
-                <button class="btn" onclick="revokeInvite('${inv.id}')" style="background:var(--danger); color:white; padding:4px 10px; font-size:0.8rem;">Revoke</button>
-            </div>`).join("");
-    }
-
-    function openInviteModal() {
-        const select = document.getElementById("invClaim");
-        select.innerHTML = `<option value="">— New Missionary (blank profile) —</option>`;
-        state.missionaries.filter((m) => !m.auth_user_id).forEach((m) => {
-            select.innerHTML += `<option value="${m.id}">${esc(m.name)}</option>`;
-        });
-        document.getElementById("invEmail").value = "";
-        document.getElementById("invIsAdmin").checked = false;
-        document.getElementById("inviteError").textContent = "";
-        document.getElementById("inviteModal").style.display = "flex";
-    }
-    function closeInviteModal() { document.getElementById("inviteModal").style.display = "none"; }
-
-    async function submitInvite() {
-        const email = document.getElementById("invEmail").value.trim();
-        const claimId = document.getElementById("invClaim").value || null;
-        const isAdminInv = document.getElementById("invIsAdmin").checked;
-        const errEl = document.getElementById("inviteError");
-        if (!email) { errEl.textContent = "Enter an email."; return; }
-
-        const { data, error } = await db.rpc("create_invite", {
-            p_email: email, p_is_admin: isAdminInv, p_claim_missionary_id: claimId
-        });
-        if (error) { errEl.textContent = error.message; return; }
-        closeInviteModal();
-        await loadAll();
-        alert(`Invite created for ${email}.\n\nCode: ${data}\n\nShare the email + this code with them so they can create their account.`);
-    }
-
-    async function revokeInvite(id) {
-        if (!confirm("Revoke this invite?")) return;
-        await db.from("invites").delete().eq("id", id);
-        await loadAll();
-    }
 
     // General notes
     function renderGeneralNotes() {
@@ -1199,7 +1010,7 @@
         if (!title) return;
         const color = prompt("Enter a color for this note (type 'red' for Mandatory/Urgent, or leave blank):", "");
         await db.from("general_notes").insert({
-            title, content_html: "Click here to add notes...", color, created_by: myMissionaryId()
+            title, content_html: "Click here to add notes...", color
         });
         await loadAll();
     }
@@ -1225,11 +1036,7 @@
             const borderStyle = ev.color ? `border-left-color: ${esc(ev.color)};` : "";
             const rsvps = ev.rsvps || [];
             const rsvpHtml = rsvps.length > 0
-                ? rsvps.map((r) => {
-                    const canRemove = state.isAdmin || r.missionary_id === myMissionaryId();
-                    const removeBtn = canRemove ? `<span class="rsvp-remove" onclick="removeRsvp('${r.id}')">&times;</span>` : "";
-                    return `<span class="rsvp-badge">${esc(r.name)} ${removeBtn}</span>`;
-                }).join("")
+                ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}')">&times;</span></span>`).join("")
                 : "None yet.";
 
             el.innerHTML += `
@@ -1270,8 +1077,14 @@
     }
 
     async function addRsvp(eventId) {
-        if (!myMissionaryId()) { alert("Finish your profile before RSVPing."); return; }
-        const { error } = await db.from("event_rsvps").insert({ event_id: eventId, missionary_id: myMissionaryId() });
+        const name = prompt("Enter your name to RSVP:");
+        if (!name) return;
+        const match = state.missionaries.find((m) => m.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (!match) {
+            alert(`No missionary named "${name}" found. Check the spelling, or add yourself first in the Missionaries tab.`);
+            return;
+        }
+        const { error } = await db.from("event_rsvps").insert({ event_id: eventId, missionary_id: match.id });
         if (error && !error.message.includes("duplicate")) alert(error.message);
         await loadAll();
     }
@@ -1321,7 +1134,6 @@
         state.gatherings.forEach((g) => {
             const gColor = g.color || "var(--primary)";
             const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${esc(g.emoji)}</span>` : "";
-            const canEdit = state.isAdmin || g.created_by === myMissionaryId();
             el.innerHTML += `
                 <div class="list-item" style="border-left: 4px solid ${esc(gColor)}; padding-left: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;">
                     <h4 style="color:var(--accent); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
@@ -1329,11 +1141,10 @@
                     </h4>
                     <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">🗓️ ${esc(g.date_text)}</p>
                     <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(g.description)}</p>
-                    ${canEdit ? `
                     <div style="display:flex; gap:10px;">
                         <button class="btn" onclick="openGatheringModal('${g.id}')" style="background:var(--secondary); color:white; padding: 4px 10px; font-size: 0.8rem; border: 1px solid #444;">Edit Idea</button>
                         <button class="btn" onclick="deleteGathering('${g.id}')" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
-                    </div>` : ""}
+                    </div>
                 </div>`;
         });
     }
@@ -1375,7 +1186,6 @@
         if (id) {
             ({ error } = await db.from("gatherings").update(payload).eq("id", id));
         } else {
-            payload.created_by = myMissionaryId();
             ({ error } = await db.from("gatherings").insert(payload));
         }
         if (error) { alert(error.message); return; }
@@ -1523,7 +1333,6 @@
                 ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
                 : esc(m.emoji || "👤");
             const mColor = m.color || "var(--primary)";
-            const canEdit = state.isAdmin || m.auth_user_id === state.userId;
 
             el.innerHTML += `
                 <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${esc(mColor)};">
@@ -1545,7 +1354,7 @@
                         <strong style="color:white;">Companion:</strong> ${esc(m.companion)}<br>
                         <strong style="color:white;">District:</strong> ${esc(m.district)}
                     </p>
-                    ${canEdit ? `<button class="btn" onclick="openProfileModal('${m.id}')" style="width:100%; margin-top:10px; background:var(--secondary); color:white; border: 1px solid #444;">Edit Profile</button>` : ""}
+                    <button class="btn" onclick="openProfileModal('${m.id}')" style="width:100%; margin-top:10px; background:var(--secondary); color:white; border: 1px solid #444;">Edit Profile</button>
                 </div>`;
         });
     }
@@ -1572,19 +1381,14 @@
         }
     }
 
-    let onboardingMode = false;
-
-    function openProfileModal(id = null, opts = {}) {
-        onboardingMode = !!opts.forced;
+    function openProfileModal(id = null) {
         const modal = document.getElementById("profileModal");
         document.getElementById("roleSelectorDiv").style.display = state.isAdmin ? "block" : "none";
-        document.getElementById("onboardingNotice").style.display = onboardingMode ? "block" : "none";
-        document.getElementById("profCancelBtn").style.display = onboardingMode ? "none" : "inline-block";
         document.getElementById("profPhotoFile").value = "";
 
         if (id) {
-            const m = state.missionaries.find((x) => x.id === id) || state.me;
-            document.getElementById("modalTitle").innerText = onboardingMode ? "Complete Your Profile" : "Edit Profile";
+            const m = state.missionaries.find((x) => x.id === id);
+            document.getElementById("modalTitle").innerText = "Edit Profile";
             document.getElementById("profId").value = m.id;
             document.getElementById("profName").value = m.name;
             document.getElementById("profEmoji").value = m.emoji || "";
@@ -1596,7 +1400,7 @@
             document.getElementById("profCompanion").value = m.companion || "";
             document.getElementById("profDistrict").value = m.district || "";
         } else {
-            document.getElementById("modalTitle").innerText = "Add Directory Placeholder";
+            document.getElementById("modalTitle").innerText = "Add New Missionary";
             document.getElementById("profId").value = "";
             document.getElementById("profName").value = "";
             document.getElementById("profEmoji").value = "";
@@ -1613,7 +1417,6 @@
     }
 
     function closeProfileModal() {
-        if (onboardingMode) return; // must save to dismiss during forced onboarding
         document.getElementById("profileModal").style.display = "none";
     }
 
@@ -1634,11 +1437,6 @@
         const id = document.getElementById("profId").value;
         const errEl = document.getElementById("profileError");
         const phone = document.getElementById("profPhone").value.trim();
-
-        if (onboardingMode && !phone) {
-            errEl.textContent = "Please add at least a phone number before continuing.";
-            return;
-        }
 
         const payload = {
             name: document.getElementById("profName").value,
@@ -1674,7 +1472,6 @@
             }
         }
 
-        onboardingMode = false;
         document.getElementById("profileModal").style.display = "none";
         await loadAll();
     }
