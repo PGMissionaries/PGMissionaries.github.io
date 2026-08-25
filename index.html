@@ -1105,19 +1105,6 @@
                 </div>
             </details>
 
-            <details class="card section-card" id="section-starting_soon">
-                <summary>
-                    <span class="summary-title">Starting Soon</span>
-                    <span class="summary-controls">
-                        <button class="admin-controls-inline section-default-btn" data-section="starting_soon" onclick="toggleSectionDefault(event, 'starting_soon')">Starts Closed</button>
-                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                    </span>
-                </summary>
-                <div class="section-body">
-                    <div id="startingSoonGeneralList"></div>
-                </div>
-            </details>
-
             <details class="card section-card" id="section-leadership">
                 <summary>
                     <span class="summary-title">Leadership &amp; Advisors</span>
@@ -1888,7 +1875,7 @@
 
     // --- Rendering ---
 
-    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "starting_soon", "leadership"];
+    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "leadership"];
     let staticSectionOpenStatesApplied = false;
 
     // Applied once per page load (not on every data refresh) so an admin's
@@ -1933,7 +1920,6 @@
         renderUpcomingEvents();
         renderGatheringsCarousel();
         renderUpcomingBirthdays();
-        renderStartingSoonInto("startingSoonGeneralList");
         renderStartingSoonInto("startingSoonMissionariesList");
         renderLeadership();
         renderGeneralNotes();
@@ -2598,7 +2584,10 @@
         const el = document.getElementById("districtsList");
         el.innerHTML = "";
         state.districts.forEach((d) => {
-            const members = state.missionaries.filter((m) => (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase());
+            const members = state.missionaries.filter((m) =>
+                (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase()
+                && m.id !== d.leader1_id && m.id !== d.leader2_id
+            );
             const leader1 = state.missionaries.find((m) => m.id === d.leader1_id);
             const leader2 = state.missionaries.find((m) => m.id === d.leader2_id);
             el.innerHTML += `
