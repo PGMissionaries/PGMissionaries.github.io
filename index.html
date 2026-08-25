@@ -2,28 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Missionary Zone Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2f6fed">
+    <title>Zone Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Black, Gold, and White Theme */
-            --bg-dark: #121212;
-            --bg-card: #1c1c1c;
-            --primary: #d4af37; /* Rich Gold */
-            --primary-hover: #b5952f;
-            --secondary: #262626;
-            --accent: #ffffff; /* Crisp White */
-            --text-main: #f5f5f5;
-            --text-muted: #aaaaaa;
-            --cookie-brown: #c88d52;
+            /* Bright Gospel Blue theme */
+            --bg-body: #eef3ff;
+            --bg-card: #ffffff;
+            --primary: #2f6fed;
+            --primary-hover: #2558c4;
+            --primary-light: #e8f0ff;
+            --secondary: #f3f6fc;
+            --accent: #ffb800;         /* gold accent */
+            --accent-soft: #fff5da;
+            --accent-text: #6b4a00;
+            --text-main: #16233e;
+            --text-muted: #64708a;
+            --border: #dfe7f8;
+            --cookie-brown: #a9702f;
             --danger: #ff4757;
+            --danger-soft: #ffe4e6;
+            --success: #1fb573;
+            --radius: 16px;
+            --shadow: 0 8px 24px rgba(31, 61, 122, 0.10);
+            --shadow-sm: 0 2px 8px rgba(31, 61, 122, 0.06);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-body);
             color: var(--text-main);
         }
 
@@ -31,86 +46,143 @@
         #loginScreen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-dark);
+            background: linear-gradient(160deg, #2f6fed 0%, #6a9bff 55%, #ffe6a3 130%);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             overflow-y: auto;
+            padding: 20px;
         }
         #appContent {
             display: none; /* Hidden until signed in */
         }
 
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(20, 40, 90, 0.35);
+            padding: 40px 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+        }
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: 6px;
+        }
+
         header {
-            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-            border-bottom: 2px solid var(--primary);
-            color: var(--accent);
-            padding: 1.5rem 2rem;
+            background: linear-gradient(120deg, #2f6fed, #4d8bff);
+            color: #fff;
+            padding: 1.1rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 16px rgba(31, 61, 122, 0.25);
             gap: 15px;
             flex-wrap: wrap;
         }
+        header .brand { display: flex; align-items: center; gap: 10px; }
+        header .brand .brand-emoji { font-size: 1.8rem; }
+        header h1 { font-size: 1.4rem; letter-spacing: 0.2px; }
 
         .header-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
 
-        h1, h2, h3, h4 { margin-top: 0; }
+        h1, h2, h3, h4 { margin-top: 0; font-weight: 800; }
+        h2 { color: var(--text-main); font-size: 1.4rem; margin-bottom: 18px; }
 
         .admin-btn {
-            background-color: var(--accent);
-            color: #000;
+            background-color: #ffffff;
+            color: var(--primary);
             border: none;
-            padding: 10px 20px;
+            padding: 9px 16px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 800;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             transition: all 0.2s;
         }
-        .admin-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--accent);
-        }
+        .admin-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-        nav {
-            background-color: var(--secondary);
+        /* --- Top nav (desktop/tablet) --- */
+        .top-nav {
+            background-color: var(--bg-card);
             display: flex;
-            gap: 10px;
-            padding: 15px 20px;
+            gap: 8px;
+            padding: 12px 20px;
             overflow-x: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
 
         .tab-btn {
             background: transparent;
             color: var(--text-muted);
             border: 1px solid transparent;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 9px 18px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 700;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             white-space: nowrap;
         }
-        .tab-btn:hover { background: rgba(255,255,255,0.05); color: var(--accent); }
-        .tab-btn.active {
+        .top-nav .tab-btn:hover { background: var(--primary-light); color: var(--primary); }
+        .top-nav .tab-btn.active {
             background-color: var(--primary);
-            color: #000;
-            border-color: var(--primary);
-            box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(47, 111, 237, 0.35);
+        }
+
+        /* --- Bottom tab bar (mobile) --- */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -6px 20px rgba(20, 40, 80, 0.10);
+            z-index: 500;
+            padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+        }
+        .bottom-nav-inner {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .bottom-nav .tab-btn {
+            flex: 1 0 auto;
+            min-width: 66px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 7px 4px 5px;
+            font-size: 0.65rem;
+            border-radius: 12px;
+        }
+        .bottom-nav .tab-btn .icon { font-size: 1.4rem; line-height: 1; }
+        .bottom-nav .tab-btn.active { background: var(--primary-light); color: var(--primary); box-shadow: none; }
+
+        @media (max-width: 768px) {
+            .top-nav { display: none; }
+            .bottom-nav { display: block; }
+            main { padding-bottom: 92px; }
+            header h1 { font-size: 1.2rem; }
         }
 
         main {
-            padding: 2rem;
+            padding: 1.5rem 1.25rem;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -122,13 +194,43 @@
 
         .card {
             background: var(--bg-card);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-            margin-bottom: 25px;
-            border: 1px solid #333;
+            padding: 22px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
             border-left: 5px solid var(--primary);
         }
+        .card h3 {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Stats banner */
+        .stats-banner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-pill {
+            flex: 1 1 130px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-icon { font-size: 1.5rem; }
+        .stat-value { font-size: 1.3rem; font-weight: 900; color: var(--primary); }
+        .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; }
 
         .editable {
             padding: 10px;
@@ -141,7 +243,7 @@
             color: var(--primary);
             margin-bottom: 5px;
             margin-top: 15px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border);
             padding-bottom: 3px;
             text-transform: uppercase;
             font-size: 0.85rem;
@@ -150,8 +252,8 @@
         .editable p { margin-top: 0; }
 
         .editable.editing {
-            border: 2px dashed var(--accent);
-            background-color: rgba(255, 255, 255, 0.03);
+            border: 2px dashed var(--primary);
+            background-color: var(--primary-light);
         }
 
         /* Urgent Badge */
@@ -167,11 +269,23 @@
             text-transform: uppercase;
         }
 
+        /* Birthday badge */
+        .birthday-badge {
+            background: var(--accent);
+            color: var(--accent-text);
+            font-size: 0.72rem;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-weight: 800;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
         /* Leader Profiles */
         .leader-card {
             background: var(--secondary);
-            border: 1px solid #444;
-            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 15px;
             display: flex;
             align-items: center;
@@ -180,114 +294,125 @@
             position: relative;
         }
         .leader-emoji {
-            font-size: 40px;
-            width: 70px;
-            height: 70px;
+            font-size: 34px;
+            width: 62px;
+            height: 62px;
             border-radius: 50%;
             border: 2px solid var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-dark);
+            background: var(--bg-card);
             flex-shrink: 0;
         }
-        .leader-info h4 { margin: 0 0 5px 0; color: var(--accent); font-size: 1.1rem; }
-        .leader-info p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
-        .leader-info .role-title { color: var(--primary); font-weight: bold; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
+        .leader-info { flex: 1; min-width: 0; }
+        .leader-info h4 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.05rem; }
+        .leader-info .role-title { color: var(--primary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; }
 
         /* Grid Layouts */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         /* Companionship Blocks */
         .comp-block {
-            background: var(--secondary);
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 1.25rem;
+            background: var(--bg-card);
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 1.15rem;
             font-weight: 800;
             text-align: center;
-            color: var(--accent);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            border: 1px solid #444;
-            margin-bottom: 15px;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            margin-bottom: 12px;
         }
 
         /* Missionary Cards */
         .missionary-card {
             background: var(--bg-card);
-            border-radius: 12px;
+            border-radius: var(--radius);
             padding: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            box-shadow: var(--shadow);
             text-align: center;
             position: relative;
-            border: 1px solid #333;
-            transition: all 0.3s;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .missionary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(31, 61, 122, 0.16); }
 
         .role-badge {
             position: absolute;
             top: -10px;
             right: -10px;
-            background: var(--accent);
-            color: #000;
+            background: linear-gradient(135deg, var(--accent), #ffcf4d);
+            color: var(--accent-text);
             font-weight: 900;
-            padding: 5px 15px;
+            padding: 5px 14px;
             border-radius: 20px;
-            font-size: 0.8rem;
-            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+            font-size: 0.78rem;
+            box-shadow: 0 3px 10px rgba(255, 184, 0, 0.4);
             display: none;
         }
         .role-badge.active { display: block; }
 
         .missionary-emoji {
-            font-size: 60px;
-            width: 120px;
-            height: 120px;
+            font-size: 56px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             border: 3px solid var(--primary);
-            margin: 0 auto 10px auto;
+            margin: 0 auto 6px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--secondary);
-            transition: all 0.3s;
+            background: var(--primary-light);
+            transition: all 0.2s;
             overflow: hidden;
+            cursor: pointer;
+            position: relative;
         }
+        .missionary-emoji:hover { box-shadow: 0 0 0 4px var(--primary-light); }
         .missionary-emoji img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+        .avatar-tap-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
 
         /* Fun Cookies */
         .cookie-banner {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--accent);
+            background: var(--accent-soft);
+            color: var(--accent-text);
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
-            margin: 10px auto;
-            font-weight: bold;
+            margin: 8px auto;
+            font-weight: 800;
             display: inline-block;
-            border: 1px solid #444;
+            border: 1px solid var(--accent);
         }
         .cookies-container {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
-            margin: 15px 0;
-            background: rgba(0,0,0,0.3);
+            margin: 12px 0;
+            background: var(--secondary);
             padding: 10px;
             border-radius: 30px;
-            border: 1px solid #333;
+            border: 1px solid var(--border);
         }
         .cookie-score {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 900;
             color: var(--cookie-brown);
             display: flex;
@@ -304,89 +429,104 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            color: #000;
+            color: #fff;
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(200, 141, 82, 0.4);
+            box-shadow: 0 2px 8px rgba(200, 141, 82, 0.5);
             transition: transform 0.1s;
         }
         .add-cookie:active { transform: scale(0.8); }
 
         @keyframes toss {
             0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: translateY(-30px) scale(1.5) rotate(180deg); opacity: 1; }
-            100% { transform: translateY(0) scale(1) rotate(360deg); opacity: 0; }
+            50% { transform: translateY(-36px) scale(1.6) rotate(180deg); opacity: 1; }
+            100% { transform: translateY(-6px) scale(1) rotate(360deg); opacity: 0; }
         }
         .coin-anim {
             position: absolute;
             font-size: 2rem;
             pointer-events: none;
-            animation: toss 0.6s ease-out forwards;
+            animation: toss 0.65s ease-out forwards;
             z-index: 50;
         }
 
         .btn {
             background: var(--primary);
-            color: #000;
+            color: #fff;
             border: none;
             padding: 10px 20px;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 800;
+            font-family: inherit;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.15s;
+            font-size: 0.95rem;
         }
-        .btn:hover { background: var(--primary-hover); }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-accent { background: var(--accent); color: var(--accent-text); }
+        .btn-accent:hover { background: #e6a600; }
+        .btn-outline { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--secondary); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #e6394a; }
+        .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+        .btn-block { width: 100%; }
 
         /* Modals */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(16, 30, 60, 0.55);
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 16px;
         }
         .modal-content {
             background: var(--bg-card);
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
+            padding: 28px;
+            border-radius: 20px;
+            width: 100%;
             max-width: 450px;
-            border: 1px solid #444;
+            border: 1px solid var(--border);
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(20, 40, 90, 0.3);
         }
         .modal-content label {
             display: block;
             margin-top: 15px;
             color: var(--primary);
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         .modal-content input[type="text"], .modal-content input[type="password"],
-        .modal-content input[type="email"], .modal-content input[type="file"], .modal-content select {
+        .modal-content input[type="email"], .modal-content select {
             width: 100%;
             padding: 12px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: var(--bg-dark);
-            color: white;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--secondary);
+            color: var(--text-main);
             box-sizing: border-box;
             font-family: inherit;
+            font-size: 1rem;
         }
         .modal-content input[type="color"] {
             width: 100%;
             height: 45px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: var(--bg-dark);
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--secondary);
             cursor: pointer;
             padding: 2px;
         }
-        .modal-content input:focus {
+        .modal-content input:focus, .modal-content select:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -399,7 +539,7 @@
         .checkbox-row input { width: auto; margin: 0; }
         .checkbox-row label { margin: 0; }
         .field-hint { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
-        .error-text { color: var(--danger); font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; }
+        .error-text { color: var(--danger); font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; font-weight: 700; }
 
         .admin-controls { display: none; margin-top: 15px; }
         .admin-mode .admin-controls { display: block; }
@@ -407,7 +547,7 @@
         .admin-controls-inline { display: none; }
 
         .list-item {
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border);
             padding-bottom: 15px;
             margin-bottom: 15px;
             transition: all 0.2s;
@@ -421,15 +561,19 @@
         /* Search input styling */
         #missionarySearch, #companionshipSearch {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: var(--bg-dark);
-            color: white;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
             box-sizing: border-box;
             font-family: inherit;
             font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 8px;
+            z-index: 5;
         }
         #missionarySearch:focus, #companionshipSearch:focus {
             outline: none;
@@ -441,30 +585,66 @@
             display: block;
             text-align: center;
             text-decoration: none;
-            background: var(--secondary);
-            color: white;
-            border: 1px solid #444;
+            background: var(--primary);
+            color: #fff;
+            border: none;
             padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 10px;
+            font-weight: 800;
             transition: all 0.2s;
             margin-bottom: 15px;
         }
-        .resource-link:hover {
-            background: #333;
-            border-color: var(--primary);
-            color: var(--primary);
+        .resource-link:hover { background: var(--primary-hover); }
+
+        /* Contact / address rows with copy buttons */
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--secondary);
+            border-radius: 10px;
+            padding: 9px 10px;
+            margin-bottom: 8px;
         }
+        .info-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .info-link:hover { color: var(--primary); }
+        .info-text {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .copy-btn {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .copy-btn:hover { background: var(--primary); color: #fff; }
+        .copy-btn.copied { background: var(--success); color: #fff; }
 
         /* RSVP Styling */
         .rsvp-badge {
             display: inline-block;
-            background: rgba(255,255,255,0.08);
+            background: var(--primary-light);
+            color: var(--text-main);
             padding: 3px 8px;
             border-radius: 12px;
             margin: 3px 4px 3px 0;
             font-size: 0.85em;
-            border: 1px solid #444;
+            border: 1px solid var(--border);
         }
         .rsvp-remove {
             cursor: pointer;
@@ -478,29 +658,53 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border);
             font-size: 0.9rem;
         }
         .invite-row:last-child { border-bottom: none; }
         .invite-code {
             font-family: monospace;
-            background: rgba(255,255,255,0.08);
+            background: var(--primary-light);
             padding: 2px 8px;
             border-radius: 6px;
             color: var(--primary);
             letter-spacing: 1px;
         }
+
+        /* Avatar upload in profile modal */
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .avatar-preview {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px dashed var(--primary);
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            overflow: hidden;
+        }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload-hint { color: var(--primary); font-weight: 800; font-size: 0.85rem; margin-top: 8px; }
     </style>
 </head>
 <body>
 
 <!-- Login Screen -->
 <div id="loginScreen">
-    <div class="card" style="margin: 20px 0; text-align: center; width: 90%; max-width: 380px;">
-        <h2 style="color: var(--primary); margin-bottom: 5px;">Zone Hub Login</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">Please enter the site password to continue.</p>
-        <input type="password" id="sitePassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #444; background:var(--bg-dark); color:white; box-sizing:border-box; font-family:inherit;" onkeypress="if(event.key === 'Enter') doSignIn()">
-        <button class="btn" style="width: 100%;" onclick="doSignIn()">Enter Site</button>
+    <div class="login-card">
+        <div class="login-logo">🌤️</div>
+        <h2 style="color: var(--primary); margin-bottom: 4px;">Zone Hub</h2>
+        <p style="color: var(--text-muted); margin-bottom: 22px;">Enter the site password to continue.</p>
+        <input type="password" id="sitePassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid var(--border); background:var(--secondary); color:var(--text-main); box-sizing:border-box; font-family:inherit; font-size:1rem;" onkeypress="if(event.key === 'Enter') doSignIn()">
+        <button class="btn btn-block" onclick="doSignIn()">Enter Site</button>
         <p id="signInError" class="error-text"></p>
     </div>
 </div>
@@ -508,21 +712,24 @@
 <!-- Main App Content (Hidden until signed in) -->
 <div id="appContent">
     <header>
-        <h1>Zone Hub</h1>
+        <div class="brand">
+            <span class="brand-emoji">🌤️</span>
+            <h1>Zone Hub</h1>
+        </div>
         <div class="header-controls">
             <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
             <button class="admin-btn" onclick="signOut()">Sign Out</button>
         </div>
     </header>
 
-    <nav>
-        <button class="tab-btn active" onclick="switchTab(event, 'general')">General</button>
-        <button class="tab-btn" onclick="switchTab(event, 'calendar')">Calendar</button>
-        <button class="tab-btn" onclick="switchTab(event, 'service')">Service</button>
-        <button class="tab-btn" onclick="switchTab(event, 'resources')">Resources</button>
-        <button class="tab-btn" onclick="switchTab(event, 'districts')">Districts</button>
-        <button class="tab-btn" onclick="switchTab(event, 'companionships')">Companionships</button>
-        <button class="tab-btn" onclick="switchTab(event, 'missionaries')">Missionaries</button>
+    <nav class="top-nav">
+        <button class="tab-btn active" data-tab="general" onclick="switchTab('general')">General</button>
+        <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">Calendar</button>
+        <button class="tab-btn" data-tab="service" onclick="switchTab('service')">Service</button>
+        <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')">Resources</button>
+        <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')">Districts</button>
+        <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')">Companionships</button>
+        <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')">Missionaries</button>
     </nav>
 
     <main>
@@ -530,21 +737,23 @@
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
 
+            <div id="statsBanner" class="stats-banner"></div>
+
             <div class="card">
-                <h3 style="color: var(--accent);">Regular Meetings</h3>
+                <h3>📋 Regular Meetings</h3>
                 <div id="meetingsText" class="editable">Loading...</div>
             </div>
 
             <div class="card">
-                <h3 style="color: var(--accent);">Leadership & Advisors</h3>
+                <h3>🧑‍💼 Leadership &amp; Advisors</h3>
                 <div class="admin-controls" style="margin-bottom: 20px;">
                     <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
                 </div>
                 <div id="leadersList"></div>
             </div>
 
-            <div class="admin-controls" style="margin: 30px 0 15px 0;">
-                <button class="btn" style="background: var(--accent);" onclick="addGeneralNote()">+ Add New Note Section</button>
+            <div class="admin-controls" style="margin: 25px 0 15px 0;">
+                <button class="btn btn-accent" onclick="addGeneralNote()">+ Add New Note Section</button>
             </div>
 
             <!-- Dynamic General Notes Container -->
@@ -565,17 +774,17 @@
             <h2>Service Opportunities</h2>
             <div class="grid">
                 <div class="card">
-                    <h3 style="color: var(--accent);">Approved Sites</h3>
+                    <h3>🤝 Approved Sites</h3>
                     <div class="admin-controls" style="margin-bottom: 15px;">
-                        <button class="btn" onclick="addSite()" style="background: var(--accent); color: black;">+ Add Site</button>
+                        <button class="btn btn-accent" onclick="addSite()">+ Add Site</button>
                     </div>
                     <div id="sitesList"></div>
                 </div>
 
                 <div class="card">
-                    <h3 style="color: var(--accent);">Gatherings & Ideas</h3>
+                    <h3>🎉 Gatherings &amp; Ideas</h3>
                     <div style="margin-bottom: 15px;">
-                        <button class="btn" onclick="openGatheringModal()" style="background: var(--accent); color: black;">+ Add Gathering / Idea</button>
+                        <button class="btn btn-accent" onclick="openGatheringModal()">+ Add Gathering / Idea</button>
                     </div>
                     <div id="gatheringsList"></div>
                 </div>
@@ -584,10 +793,10 @@
 
         <!-- Resources Tab -->
         <div id="resources" class="tab-content">
-            <h2>Zone Documents & Resources</h2>
-            <p style="color: var(--text-muted); margin-bottom: 25px;">Click to view or download important zone documents.</p>
+            <h2>Zone Documents &amp; Resources</h2>
+            <p style="color: var(--text-muted); margin-bottom: 22px;">Tap to view or download important zone documents.</p>
             <div class="admin-controls" style="margin-bottom: 20px;">
-                <button class="btn" onclick="addResource()" style="background: var(--accent); color: black;">+ Add Document Link</button>
+                <button class="btn btn-accent" onclick="addResource()">+ Add Document Link</button>
             </div>
             <div id="resourcesList" class="grid"></div>
         </div>
@@ -608,7 +817,7 @@
                 <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
             </div>
 
-            <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
+            <input type="text" id="companionshipSearch" placeholder="🔍 Search companionships..." onkeyup="filterCompanionships()">
 
             <div id="companionshipsList" class="grid"></div>
         </div>
@@ -616,18 +825,31 @@
         <!-- Missionaries Tab -->
         <div id="missionaries" class="tab-content">
             <h2>Missionary Profiles</h2>
-            <button class="btn" onclick="openProfileModal()" style="margin-bottom: 20px; background: var(--accent); color: black;">+ Add New Missionary</button>
+            <button class="btn btn-accent" onclick="openProfileModal()" style="margin-bottom: 20px;">+ Add New Missionary</button>
 
-            <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
+            <input type="text" id="missionarySearch" placeholder="🔍 Search missionaries by name..." onkeyup="filterMissionaries()">
 
             <div id="missionaryList" class="grid"></div>
         </div>
     </main>
 
+    <!-- Bottom tab bar (mobile) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <button class="tab-btn active" data-tab="general" onclick="switchTab('general')"><span class="icon">🏠</span>General</button>
+            <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')"><span class="icon">🗓️</span>Calendar</button>
+            <button class="tab-btn" data-tab="service" onclick="switchTab('service')"><span class="icon">🤝</span>Service</button>
+            <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')"><span class="icon">📚</span>Docs</button>
+            <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')"><span class="icon">🧭</span>Districts</button>
+            <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')"><span class="icon">👥</span>Comps</button>
+            <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')"><span class="icon">🪪</span>People</button>
+        </div>
+    </nav>
+
     <!-- Leader Modal -->
     <div id="leaderModal" class="modal">
         <div class="modal-content">
-            <h2 style="color: var(--accent); margin-top:0;">Edit Leader/Advisor</h2>
+            <h2 style="color: var(--text-main); margin-top:0;">Edit Leader/Advisor</h2>
             <input type="hidden" id="ldrId">
 
             <label>Role / Title</label>
@@ -643,8 +865,8 @@
             <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
 
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" onclick="saveLeader()" style="background: var(--primary);">Save Leader</button>
-                <button class="btn" onclick="closeLeaderModal()" style="background: var(--secondary); color: white;">Cancel</button>
+                <button class="btn" onclick="saveLeader()">Save Leader</button>
+                <button class="btn btn-outline" onclick="closeLeaderModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -652,7 +874,7 @@
     <!-- Gathering Modal -->
     <div id="gatheringModal" class="modal">
         <div class="modal-content">
-            <h2 id="gatheringModalTitle" style="color: var(--accent); margin-top:0;">Edit Gathering / Idea</h2>
+            <h2 id="gatheringModalTitle" style="color: var(--text-main); margin-top:0;">Edit Gathering / Idea</h2>
             <input type="hidden" id="gathId">
 
             <label>Title</label>
@@ -668,11 +890,11 @@
             <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
 
             <label>Theme Color</label>
-            <input type="color" id="gathColor" value="#d4af37">
+            <input type="color" id="gathColor" value="#2f6fed">
 
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" onclick="saveGathering()" style="background: var(--primary);">Save Gathering</button>
-                <button class="btn" onclick="closeGatheringModal()" style="background: var(--secondary); color: white;">Cancel</button>
+                <button class="btn" onclick="saveGathering()">Save Gathering</button>
+                <button class="btn btn-outline" onclick="closeGatheringModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -680,20 +902,23 @@
     <!-- Profile Modal -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
-            <h2 id="modalTitle" style="color: var(--accent); margin-top:0;">Edit Profile</h2>
+            <h2 id="modalTitle" style="color: var(--text-main); margin-top:0;">Edit Profile</h2>
             <input type="hidden" id="profId">
+
+            <div class="avatar-upload" onclick="document.getElementById('profPhotoFile').click()">
+                <div id="profAvatarPreview" class="avatar-preview">👤</div>
+                <div class="avatar-upload-hint">📷 Tap to change photo</div>
+            </div>
+            <input type="file" id="profPhotoFile" accept="image/*" style="display:none" onchange="previewSelectedPhoto(this)">
 
             <label>Name</label>
             <input type="text" id="profName" placeholder="e.g. Elder Smith">
-
-            <label>Photo</label>
-            <input type="file" id="profPhotoFile" accept="image/*">
 
             <label>Profile Emoji (shown if no photo)</label>
             <input type="text" id="profEmoji" placeholder="e.g. 🚴‍♂️" maxlength="5">
 
             <label>Theme Color</label>
-            <input type="color" id="profColor" value="#d4af37">
+            <input type="color" id="profColor" value="#2f6fed">
 
             <div id="roleSelectorDiv" style="display: none;">
                 <label>Zone Service Assignment (Admin Only)</label>
@@ -721,9 +946,9 @@
             <input type="text" id="profDistrict" placeholder="Which District?">
 
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" id="profSaveBtn" onclick="saveProfile()" style="background: var(--primary);">Save Profile</button>
-                <button class="btn" id="profCancelBtn" onclick="closeProfileModal()" style="background: var(--secondary); color: white;">Cancel</button>
-                <button class="btn admin-controls" id="profDeleteBtn" onclick="deleteProfile()" style="background: var(--danger); color: white;">Delete Missionary</button>
+                <button class="btn" id="profSaveBtn" onclick="saveProfile()">Save Profile</button>
+                <button class="btn btn-outline" id="profCancelBtn" onclick="closeProfileModal()">Cancel</button>
+                <button class="btn btn-danger admin-controls" id="profDeleteBtn" onclick="deleteProfile()">Delete Missionary</button>
             </div>
             <p id="profileError" class="error-text"></p>
         </div>
@@ -771,6 +996,75 @@
         return String(str ?? "").replace(/[&<>"']/g, (c) => ({
             "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
         }[c]));
+    }
+
+    // --- Copy-to-clipboard + contact row helpers ---
+
+    async function copyToClipboard(btn) {
+        const text = btn.dataset.copy;
+        if (!text) return;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus(); ta.select();
+            try { document.execCommand("copy"); } catch (e2) { /* no-op */ }
+            ta.remove();
+        }
+        const original = btn.textContent;
+        btn.textContent = "✓";
+        btn.classList.add("copied");
+        clearTimeout(btn._copyTimeout);
+        btn._copyTimeout = setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove("copied");
+        }, 1200);
+    }
+
+    function phoneRow(phone) {
+        if (!phone) return "";
+        const digits = phone.replace(/[^0-9+]/g, "");
+        return `
+            <div class="info-row">
+                <a class="info-link" href="tel:${esc(digits)}">📞 ${esc(phone)}</a>
+                <button class="copy-btn" data-copy="${esc(phone)}" onclick="copyToClipboard(this)" title="Copy phone number">📋</button>
+            </div>`;
+    }
+
+    function addressRow(address) {
+        if (!address) return "";
+        return `
+            <div class="info-row">
+                <a class="info-link" href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" rel="noopener noreferrer">📍 ${esc(address)}</a>
+                <button class="copy-btn" data-copy="${esc(address)}" onclick="copyToClipboard(this)" title="Copy address">📋</button>
+            </div>`;
+    }
+
+    function copyableRow(icon, value) {
+        if (!value) return "";
+        return `
+            <div class="info-row">
+                <span class="info-text">${icon ? icon + " " : ""}${esc(value)}</span>
+                <button class="copy-btn" data-copy="${esc(value)}" onclick="copyToClipboard(this)" title="Copy">📋</button>
+            </div>`;
+    }
+
+    // Best-effort birthday check against free-text birthday fields like "October 24".
+    const MONTH_NAMES = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+    function isBirthdayToday(birthdayText) {
+        if (!birthdayText) return false;
+        const text = String(birthdayText).toLowerCase();
+        const monthIdx = MONTH_NAMES.findIndex((m) => text.includes(m) || text.includes(m.slice(0, 3)));
+        if (monthIdx === -1) return false;
+        const dayMatch = text.match(/\b(\d{1,2})\b/);
+        if (!dayMatch) return false;
+        const day = parseInt(dayMatch[1], 10);
+        const today = new Date();
+        return monthIdx === today.getMonth() && day === today.getDate();
     }
 
     // --- Auth ---
@@ -879,24 +1173,26 @@
         document.body.classList.toggle("admin-mode", state.isAdmin);
         const adminBtn = document.getElementById("adminBtn");
         adminBtn.innerText = state.isAdmin ? "Lock" : "Admin";
-        adminBtn.style.background = state.isAdmin ? "var(--danger)" : "var(--accent)";
-        adminBtn.style.color = state.isAdmin ? "#fff" : "#000";
+        adminBtn.style.background = state.isAdmin ? "var(--danger)" : "#ffffff";
+        adminBtn.style.color = state.isAdmin ? "#fff" : "var(--primary)";
         renderApp();
     }
 
     // --- Tab switching ---
 
-    function switchTab(evt, tabName) {
+    function switchTab(tabName) {
         document.querySelectorAll(".tab-content").forEach((tab) => tab.classList.remove("active"));
         document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
         document.getElementById(tabName).classList.add("active");
-        evt.currentTarget.classList.add("active");
+        document.querySelectorAll(`.tab-btn[data-tab="${tabName}"]`).forEach((btn) => btn.classList.add("active"));
+        window.scrollTo(0, 0);
     }
 
     // --- Rendering ---
 
     function renderApp() {
         document.getElementById("meetingsText").innerHTML = state.meetingsHtml || "Click to add meeting info...";
+        renderStats();
         renderLeadership();
         renderGeneralNotes();
         renderCalendar();
@@ -909,6 +1205,23 @@
         setEditableElements();
         filterMissionaries();
         filterCompanionships();
+    }
+
+    function renderStats() {
+        const el = document.getElementById("statsBanner");
+        if (!el) return;
+        const stats = [
+            { icon: "🪪", label: "Missionaries", value: state.missionaries.length },
+            { icon: "🧭", label: "Districts", value: state.districts.length },
+            { icon: "👥", label: "Companionships", value: state.companionships.length },
+            { icon: "🗓️", label: "Events", value: state.calendarEvents.length }
+        ];
+        el.innerHTML = stats.map((s) => `
+            <div class="stat-pill">
+                <span class="stat-icon">${s.icon}</span>
+                <span class="stat-value">${s.value}</span>
+                <span class="stat-label">${esc(s.label)}</span>
+            </div>`).join("");
     }
 
     function setEditableElements() {
@@ -947,10 +1260,10 @@
                     <div class="leader-info">
                         <div class="role-title">${esc(ldr.role_title)}</div>
                         <h4>${esc(ldr.name)}</h4>
-                        <p>📞 ${esc(ldr.phone)}</p>
+                        ${phoneRow(ldr.phone)}
                     </div>
                     <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
-                        <button class="btn" onclick="deleteLeader('${ldr.id}')" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Delete</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLeader('${ldr.id}')">Delete</button>
                     </div>
                 </div>`;
         });
@@ -996,10 +1309,10 @@
             const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
             el.innerHTML += `
                 <div class="card" style="${borderStyle}">
-                    <h3 style="color: var(--accent); display:flex; align-items:center;">${esc(note.title)} ${badge}</h3>
+                    <h3>${esc(note.title)} ${badge}</h3>
                     <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
                     <div class="admin-controls">
-                        <button class="btn" onclick="deleteGeneralNote('${note.id}')" style="background:var(--danger); color:white; margin-top:10px; padding:5px 10px; font-size:0.85rem;">Delete Section</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGeneralNote('${note.id}')" style="margin-top:10px;">Delete Section</button>
                     </div>
                 </div>`;
         });
@@ -1041,20 +1354,20 @@
 
             el.innerHTML += `
                 <div class="card" style="${borderStyle}">
-                    <h3 style="color:var(--primary); margin-bottom: 10px;">${esc(ev.title)} ${badge}</h3>
-                    <p style="margin-bottom: 5px;"><strong style="color:white;">Date:</strong> ${esc(ev.event_date)}</p>
+                    <h3 style="color:var(--primary);">🗓️ ${esc(ev.title)} ${badge}</h3>
+                    <p style="margin-bottom: 5px;"><strong style="color:var(--text-main);">Date:</strong> ${esc(ev.event_date)}</p>
                     <p style="color:var(--text-muted); margin-top:0;">${esc(ev.description)}</p>
 
-                    <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
+                    <div style="margin-top: 15px; background: var(--secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="color: var(--accent); font-size: 0.95rem;">RSVPs (${rsvps.length})</strong>
-                            <button class="btn" onclick="addRsvp('${ev.id}')" style="padding: 4px 10px; font-size: 0.8rem; background: var(--secondary); color: white; border: 1px solid #444;">+ RSVP</button>
+                            <strong style="color: var(--text-main); font-size: 0.95rem;">RSVPs (${rsvps.length})</strong>
+                            <button class="btn btn-outline btn-sm" onclick="addRsvp('${ev.id}')">+ RSVP</button>
                         </div>
                         <div style="color: var(--text-muted);">${rsvpHtml}</div>
                     </div>
 
                     <div class="admin-controls" style="margin-top: 15px;">
-                        <button class="btn" onclick="deleteEvent('${ev.id}')" style="background:var(--danger); color:white;">Delete Event</button>
+                        <button class="btn btn-danger" onclick="deleteEvent('${ev.id}')">Delete Event</button>
                     </div>
                 </div>`;
         });
@@ -1102,11 +1415,12 @@
         state.serviceSites.forEach((site) => {
             el.innerHTML += `
                 <div class="list-item">
-                    <h4 style="color:var(--primary); margin:0 0 5px 0; font-size: 1.1rem;">${esc(site.title)}</h4>
-                    <p style="margin:0 0 5px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(site.description)}</p>
-                    <p style="margin:0; font-size: 0.85em; color:var(--text-muted);">📞 Contact: ${esc(site.contact)}</p>
+                    <h4 style="color:var(--primary); margin:0 0 6px 0; font-size: 1.1rem;">${esc(site.title)}</h4>
+                    <p style="margin:0 0 8px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(site.description)}</p>
+                    ${addressRow(site.address)}
+                    ${copyableRow("📞", site.contact)}
                     <div class="admin-controls">
-                        <button class="btn" onclick="deleteSite('${site.id}')" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem; margin-top: 10px;">Delete Site</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSite('${site.id}')" style="margin-top: 6px;">Delete Site</button>
                     </div>
                 </div>`;
         });
@@ -1116,8 +1430,9 @@
         const title = prompt("Site Name (e.g. Local Food Bank):");
         if (!title) return;
         const desc = prompt("Site Description/Details:");
-        const contact = prompt("Contact Info:");
-        await db.from("service_sites").insert({ title, description: desc, contact });
+        const address = prompt("Site Address (for maps + copy button, optional):");
+        const contact = prompt("Contact Info (name/phone/email):");
+        await db.from("service_sites").insert({ title, description: desc, address, contact });
         await loadAll();
     }
 
@@ -1135,15 +1450,15 @@
             const gColor = g.color || "var(--primary)";
             const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${esc(g.emoji)}</span>` : "";
             el.innerHTML += `
-                <div class="list-item" style="border-left: 4px solid ${esc(gColor)}; padding-left: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;">
-                    <h4 style="color:var(--accent); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
+                <div class="list-item" style="border-left: 4px solid ${esc(gColor)}; padding-left: 15px;">
+                    <h4 style="color:var(--text-main); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
                         ${gEmoji} ${esc(g.title)}
                     </h4>
                     <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">🗓️ ${esc(g.date_text)}</p>
                     <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(g.description)}</p>
                     <div style="display:flex; gap:10px;">
-                        <button class="btn" onclick="openGatheringModal('${g.id}')" style="background:var(--secondary); color:white; padding: 4px 10px; font-size: 0.8rem; border: 1px solid #444;">Edit Idea</button>
-                        <button class="btn" onclick="deleteGathering('${g.id}')" style="background:var(--danger); color:white; padding: 4px 10px; font-size: 0.8rem;">Delete Idea</button>
+                        <button class="btn btn-outline btn-sm" onclick="openGatheringModal('${g.id}')">Edit Idea</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGathering('${g.id}')">Delete Idea</button>
                     </div>
                 </div>`;
         });
@@ -1159,7 +1474,7 @@
             document.getElementById("gathDate").value = g.date_text;
             document.getElementById("gathDesc").value = g.description;
             document.getElementById("gathEmoji").value = g.emoji || "";
-            document.getElementById("gathColor").value = g.color || "#d4af37";
+            document.getElementById("gathColor").value = g.color || "#2f6fed";
         } else {
             document.getElementById("gatheringModalTitle").innerText = "Add Gathering / Idea";
             document.getElementById("gathId").value = "";
@@ -1167,7 +1482,7 @@
             document.getElementById("gathDate").value = "";
             document.getElementById("gathDesc").value = "";
             document.getElementById("gathEmoji").value = "";
-            document.getElementById("gathColor").value = "#d4af37";
+            document.getElementById("gathColor").value = "#2f6fed";
         }
         modal.style.display = "flex";
     }
@@ -1206,10 +1521,10 @@
         state.resources.forEach((res) => {
             el.innerHTML += `
                 <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <h3 style="color:var(--primary); margin-bottom: 15px; text-align: center;">${esc(res.title)}</h3>
+                    <h3 style="text-align: center; justify-content: center;">📄 ${esc(res.title)}</h3>
                     <a href="${esc(res.url)}" target="_blank" rel="noopener noreferrer" class="resource-link">Open Document</a>
                     <div class="admin-controls">
-                        <button class="btn" onclick="deleteResource('${res.id}')" style="background:var(--danger); color:white; width: 100%;">Delete</button>
+                        <button class="btn btn-danger btn-block" onclick="deleteResource('${res.id}')">Delete</button>
                     </div>
                 </div>`;
         });
@@ -1238,10 +1553,10 @@
             el.innerHTML += `
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="color: var(--accent);">${esc(d.name)}</h3>
+                        <h3>🧭 ${esc(d.name)}</h3>
                         <div class="admin-controls" style="margin:0; display:flex; gap:8px;">
-                            <button class="btn" onclick="renameDistrict('${d.id}')" style="background:var(--secondary); color:white; padding:4px 10px; font-size:0.8rem; border:1px solid #444;">Rename</button>
-                            <button class="btn" onclick="deleteDistrict('${d.id}')" style="background:var(--danger); color:white; padding:4px 10px; font-size:0.8rem;">Delete</button>
+                            <button class="btn btn-outline btn-sm" onclick="renameDistrict('${d.id}')">Rename</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDistrict('${d.id}')">Delete</button>
                         </div>
                     </div>
                     <div class="editable district-content" data-id="${d.id}">${d.content_html || ""}</div>
@@ -1282,9 +1597,9 @@
         state.companionships.forEach((comp) => {
             el.innerHTML += `
                 <div class="comp-block">
-                    ${esc(comp.names)}
+                    👥 ${esc(comp.names)}
                     <div class="admin-controls" style="margin-top:10px;">
-                        <button class="btn" onclick="deleteCompanionship('${comp.id}')" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.8rem;">Remove</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCompanionship('${comp.id}')">Remove</button>
                     </div>
                 </div>`;
         });
@@ -1329,6 +1644,7 @@
         el.innerHTML = "";
         state.missionaries.forEach((m) => {
             const roleBadge = m.service_role ? `<div class="role-badge active">${esc(m.service_role)}</div>` : "";
+            const birthdayBadge = isBirthdayToday(m.birthday) ? `<span class="birthday-badge">🎂 Birthday!</span>` : "";
             const avatar = m.photo_url
                 ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
                 : esc(m.emoji || "👤");
@@ -1337,8 +1653,9 @@
             el.innerHTML += `
                 <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${esc(mColor)};">
                     ${roleBadge}
-                    <div class="missionary-emoji" style="border-color: ${esc(mColor)};">${avatar}</div>
-                    <h3 class="missionary-name">${esc(m.name)}</h3>
+                    <div class="missionary-emoji" style="border-color: ${esc(mColor)};" onclick="openProfileModal('${m.id}')" title="Tap to edit profile & photo">${avatar}</div>
+                    <div class="avatar-tap-hint">📷 Tap photo to edit</div>
+                    <h3 class="missionary-name">${esc(m.name)} ${birthdayBadge}</h3>
                     <div class="cookie-banner" id="banner-${m.id}">${esc(m.name)} has ${m.cookies || 0} cookies</div>
 
                     <div class="cookies-container">
@@ -1346,15 +1663,15 @@
                         <button class="add-cookie" onclick="addCookie(event, '${m.id}')">+</button>
                     </div>
 
-                    <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-                    <p style="font-size: 0.95em; text-align: left; color: var(--text-muted); line-height:1.8;">
-                        <strong style="color:white;">Phone:</strong> ${esc(m.phone) || "N/A"}<br>
-                        <strong style="color:white;">Sites:</strong> ${esc(m.sites)}<br>
-                        <strong style="color:white;">Birthday:</strong> ${esc(m.birthday)}<br>
-                        <strong style="color:white;">Companion:</strong> ${esc(m.companion)}<br>
-                        <strong style="color:white;">District:</strong> ${esc(m.district)}
+                    <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                    ${phoneRow(m.phone)}
+                    <p style="font-size: 0.95em; text-align: left; color: var(--text-muted); line-height:1.8; margin-top: 10px;">
+                        <strong style="color:var(--text-main);">Sites:</strong> ${esc(m.sites)}<br>
+                        <strong style="color:var(--text-main);">Birthday:</strong> ${esc(m.birthday)}<br>
+                        <strong style="color:var(--text-main);">Companion:</strong> ${esc(m.companion)}<br>
+                        <strong style="color:var(--text-main);">District:</strong> ${esc(m.district)}
                     </p>
-                    <button class="btn" onclick="openProfileModal('${m.id}')" style="width:100%; margin-top:10px; background:var(--secondary); color:white; border: 1px solid #444;">Edit Profile</button>
+                    <button class="btn btn-outline btn-block" onclick="openProfileModal('${m.id}')" style="margin-top:10px;">Edit Profile</button>
                 </div>`;
         });
     }
@@ -1377,8 +1694,23 @@
             coin.style.left = (rect.left - cardRect.left) + "px";
             coin.style.top = (rect.top - cardRect.top) + "px";
             card.appendChild(coin);
-            setTimeout(() => coin.remove(), 600);
+            setTimeout(() => coin.remove(), 650);
         }
+    }
+
+    function setAvatarPreview(photoUrl, emoji) {
+        const preview = document.getElementById("profAvatarPreview");
+        preview.innerHTML = photoUrl ? `<img src="${esc(photoUrl)}" alt="Preview">` : esc(emoji || "👤");
+    }
+
+    function previewSelectedPhoto(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById("profAvatarPreview").innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        };
+        reader.readAsDataURL(file);
     }
 
     function openProfileModal(id = null) {
@@ -1392,25 +1724,27 @@
             document.getElementById("profId").value = m.id;
             document.getElementById("profName").value = m.name;
             document.getElementById("profEmoji").value = m.emoji || "";
-            document.getElementById("profColor").value = m.color || "#d4af37";
+            document.getElementById("profColor").value = m.color || "#2f6fed";
             document.getElementById("profRole").value = m.service_role || "";
             document.getElementById("profPhone").value = m.phone || "";
             document.getElementById("profSites").value = m.sites || "";
             document.getElementById("profBirthday").value = m.birthday || "";
             document.getElementById("profCompanion").value = m.companion || "";
             document.getElementById("profDistrict").value = m.district || "";
+            setAvatarPreview(m.photo_url, m.emoji);
         } else {
             document.getElementById("modalTitle").innerText = "Add New Missionary";
             document.getElementById("profId").value = "";
             document.getElementById("profName").value = "";
             document.getElementById("profEmoji").value = "";
-            document.getElementById("profColor").value = "#d4af37";
+            document.getElementById("profColor").value = "#2f6fed";
             document.getElementById("profRole").value = "";
             document.getElementById("profPhone").value = "";
             document.getElementById("profSites").value = "";
             document.getElementById("profBirthday").value = "";
             document.getElementById("profCompanion").value = "";
             document.getElementById("profDistrict").value = "";
+            setAvatarPreview(null, "👤");
         }
         document.getElementById("profileError").textContent = "";
         modal.style.display = "flex";
