@@ -400,6 +400,11 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
+            align-items: start;
+        }
+        #missionaryList.grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
         }
 
         /* Companionship Blocks */
@@ -417,73 +422,65 @@
             margin-bottom: 12px;
         }
 
-        /* Missionary Cards */
+        /* Missionary Cards -- collapsed = square photo + name; click to expand details */
         .missionary-card {
             background: var(--bg-card);
             border-radius: var(--radius);
-            padding: 20px;
             box-shadow: var(--shadow);
-            text-align: center;
-            position: relative;
             border: 1px solid var(--border);
+            overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .missionary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(31, 61, 122, 0.16); }
-
-        .role-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: linear-gradient(135deg, var(--accent), #ffcf4d);
-            color: var(--accent-text);
-            font-weight: 900;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            box-shadow: 0 3px 10px rgba(255, 184, 0, 0.4);
-            display: none;
+        .missionary-card > summary {
+            display: block;
+            list-style: none;
+            cursor: pointer;
         }
-        .role-badge.active { display: block; }
+        .missionary-card > summary::-webkit-details-marker { display: none; }
 
-        .birthday-badge {
-            background: var(--accent);
-            color: var(--accent-text);
-            font-size: 0.72rem;
-            padding: 3px 9px;
-            border-radius: 12px;
+        .missionary-photo-tile {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--primary-light);
+            overflow: hidden;
+        }
+        .missionary-photo-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .missionary-photo-tile .initial-fallback {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.4rem;
             font-weight: 800;
-            margin-left: 6px;
-            vertical-align: middle;
+            color: var(--primary);
         }
 
-        .missionary-emoji {
-            font-size: 44px;
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            margin: 0 auto 6px auto;
+        .missionary-summary-footer {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: var(--primary-light);
-            transition: all 0.2s;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 10px 12px;
+        }
+        .missionary-name {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
             overflow: hidden;
-            cursor: pointer;
-            position: relative;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .missionary-emoji:hover { box-shadow: 0 0 0 4px var(--primary-light); }
-        .missionary-emoji img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .avatar-tap-hint {
-            font-size: 0.7rem;
+        .missionary-card .chevron {
+            width: 16px; height: 16px;
             color: var(--text-muted);
-            margin-bottom: 12px;
-            font-weight: 700;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
         }
+        .missionary-card[open] .chevron { transform: rotate(180deg); }
+
+        .missionary-card .section-body { padding: 0 14px 18px; text-align: left; }
+        .missionary-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 
         /* Fun Cookies */
         .cookie-banner {
@@ -803,7 +800,7 @@
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
 
-            <details class="card section-card" open>
+            <details class="card section-card">
                 <summary>
                     Regular Meetings
                     <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -816,7 +813,7 @@
                 </div>
             </details>
 
-            <details class="card section-card" open>
+            <details class="card section-card">
                 <summary>
                     Upcoming Events
                     <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -827,7 +824,7 @@
                 </div>
             </details>
 
-            <details class="card section-card" open>
+            <details class="card section-card">
                 <summary>
                     Upcoming Birthdays
                     <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -837,7 +834,7 @@
                 </div>
             </details>
 
-            <details class="card section-card" open>
+            <details class="card section-card">
                 <summary>
                     Leadership &amp; Advisors
                     <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -1124,6 +1121,9 @@
     };
     function icon(name, size = 18) {
         return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name] || ""}</svg>`;
+    }
+    function chevronIcon(size = 18) {
+        return `<svg class="chevron" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS.chevron}</svg>`;
     }
 
     // --- Copy-to-clipboard + contact row helpers ---
@@ -1533,10 +1533,10 @@
             const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
             const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
             el.innerHTML += `
-                <details class="card section-card" style="${borderStyle}" open>
+                <details class="card section-card" style="${borderStyle}">
                     <summary>
                         <span>${esc(note.title)} ${badge}</span>
-                        ${icon("chevron", 20).replace('class="icon"', 'class="chevron"')}
+                        ${chevronIcon(20)}
                     </summary>
                     <div class="section-body">
                         <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
@@ -1872,41 +1872,48 @@
         });
     }
 
-    // Missionaries
+    // Missionaries -- collapsed: square photo + name only. Click to expand the rest.
     function renderMissionaries() {
         const el = document.getElementById("missionaryList");
         el.innerHTML = "";
         state.missionaries.forEach((m) => {
-            const roleBadge = m.service_role ? `<div class="role-badge active">${esc(m.service_role)}</div>` : "";
-            const birthdayBadge = daysUntilBirthday(m.birthday) === 0 ? `<span class="birthday-badge">Birthday</span>` : "";
+            const initial = (m.name || "?").trim().charAt(0).toUpperCase();
             const avatar = m.photo_url
                 ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
-                : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
-            const mColor = m.color || "var(--primary)";
+                : `<div class="initial-fallback">${esc(m.emoji || initial)}</div>`;
+
+            const roleBadge = m.service_role ? `<span class="badge-pill">${esc(m.service_role)}</span>` : "";
+            const birthdayBadge = daysUntilBirthday(m.birthday) === 0 ? `<span class="badge-pill badge-today">Birthday</span>` : "";
+            const badgesRow = (roleBadge || birthdayBadge) ? `<div class="missionary-badges">${roleBadge}${birthdayBadge}</div>` : "";
 
             el.innerHTML += `
-                <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${esc(mColor)};">
-                    ${roleBadge}
-                    <div class="missionary-emoji" style="border-color: ${esc(mColor)};" onclick="openProfileModal('${m.id}')" title="Tap to edit profile & photo">${avatar}</div>
-                    <div class="avatar-tap-hint">Tap photo to edit</div>
-                    <h3 class="missionary-name">${esc(m.name)} ${birthdayBadge}</h3>
-                    <div class="cookie-banner" id="banner-${m.id}">${esc(m.name)} has ${m.cookies || 0} cookies</div>
-
-                    <div class="cookies-container">
-                        <span class="cookie-score">🍪 <span id="score-${m.id}">${m.cookies || 0}</span></span>
-                        <button class="add-cookie" onclick="addCookie(event, '${m.id}')">+</button>
+                <details class="missionary-card" id="miss-card-${m.id}">
+                    <summary>
+                        <div class="missionary-photo-tile">${avatar}</div>
+                        <div class="missionary-summary-footer">
+                            <h3 class="missionary-name">${esc(m.name)}</h3>
+                            ${chevronIcon(16)}
+                        </div>
+                    </summary>
+                    <div class="section-body">
+                        ${badgesRow}
+                        <div style="text-align:center; margin-bottom:14px;">
+                            <div class="cookie-banner" id="banner-${m.id}">${esc(m.name)} has ${m.cookies || 0} cookies</div>
+                            <div class="cookies-container">
+                                <span class="cookie-score">🍪 <span id="score-${m.id}">${m.cookies || 0}</span></span>
+                                <button class="add-cookie" onclick="addCookie(event, '${m.id}')">+</button>
+                            </div>
+                        </div>
+                        ${phoneRow(m.phone)}
+                        <p style="font-size: 0.9em; color: var(--text-muted); line-height:1.8; margin-top: 10px;">
+                            <strong style="color:var(--text-main);">Sites:</strong> ${esc(m.sites)}<br>
+                            <strong style="color:var(--text-main);">Birthday:</strong> ${esc(m.birthday)}<br>
+                            <strong style="color:var(--text-main);">Companion:</strong> ${esc(m.companion)}<br>
+                            <strong style="color:var(--text-main);">District:</strong> ${esc(m.district)}
+                        </p>
+                        <button class="btn btn-outline btn-block" onclick="openProfileModal('${m.id}')" style="margin-top:10px;">Edit Profile</button>
                     </div>
-
-                    <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-                    ${phoneRow(m.phone)}
-                    <p style="font-size: 0.95em; text-align: left; color: var(--text-muted); line-height:1.8; margin-top: 10px;">
-                        <strong style="color:var(--text-main);">Sites:</strong> ${esc(m.sites)}<br>
-                        <strong style="color:var(--text-main);">Birthday:</strong> ${esc(m.birthday)}<br>
-                        <strong style="color:var(--text-main);">Companion:</strong> ${esc(m.companion)}<br>
-                        <strong style="color:var(--text-main);">District:</strong> ${esc(m.district)}
-                    </p>
-                    <button class="btn btn-outline btn-block" onclick="openProfileModal('${m.id}')" style="margin-top:10px;">Edit Profile</button>
-                </div>`;
+                </details>`;
         });
     }
 
