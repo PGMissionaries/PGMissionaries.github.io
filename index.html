@@ -774,6 +774,52 @@
             border-color: var(--primary);
         }
 
+        /* Gatherings carousel -- swipeable, edge-bleeding out to the screen
+           edges (matches main's own side padding via negative margin so
+           the next card peeks in from the right). */
+        .gatherings-carousel-section { margin-bottom: 28px; }
+        .gatherings-carousel-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+        .gatherings-carousel {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 1.25rem 8px;
+            margin: 0 -1.25rem;
+            scrollbar-width: none;
+        }
+        .gatherings-carousel::-webkit-scrollbar { display: none; }
+        .gathering-card {
+            scroll-snap-align: start;
+            flex: 0 0 85%;
+            max-width: 380px;
+            background: linear-gradient(160deg, var(--primary), #4d8bff);
+            color: #fff;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 12px 28px rgba(47, 111, 237, 0.35);
+        }
+        .gathering-card h3 { color: #fff; font-size: 1.3rem; margin: 10px 0 2px; }
+        .gathering-card-date { margin: 0 0 12px; font-weight: 700; opacity: 0.9; }
+        .gathering-card-desc { margin: 0 0 14px; opacity: 0.9; line-height: 1.5; }
+        .gathering-card .badge-pill { background: rgba(255,255,255,0.22); color: #fff; border-color: rgba(255,255,255,0.3); }
+        .gathering-card .info-row { background: rgba(255,255,255,0.15); }
+        .gathering-card .info-link, .gathering-card .info-text { color: #fff; }
+        .gathering-card .info-row .icon { color: rgba(255,255,255,0.85); }
+        .gathering-card .copy-btn { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.3); }
+        .gathering-card .copy-btn:hover { background: #fff; color: var(--primary); }
+        .gathering-card .copy-btn.copied { background: var(--success); color: #fff; border-color: var(--success); }
+        .gathering-rsvp-box { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 12px; margin-top: 14px; }
+        .gathering-card .rsvp-badge { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.28); }
+        .gathering-card .rsvp-remove { color: #ffd3d8; }
+        .gathering-card .btn-outline { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.32); }
+        .gathering-card .btn-outline:hover { background: #fff; color: var(--primary); }
+
+        .gatherings-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+        .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.2s; }
+        .carousel-dot.active { background: var(--primary); width: 18px; border-radius: 4px; }
+
         /* Calendar month view -- deliberately not inside a .card so the
            grid gets the full tab width instead of losing it to card padding. */
         .calendar-panel { margin-bottom: 20px; }
@@ -1002,6 +1048,10 @@
     <main>
         <!-- General Info Tab -->
         <div id="general" class="tab-content active">
+            <!-- Gatherings carousel -- deliberately above everything else,
+                 including the heading, since these are time-sensitive. -->
+            <div id="gatheringsCarouselWrap"></div>
+
             <h2>General Information</h2>
 
             <!-- Dynamic General Notes Container -- announcements live front and center,
@@ -1038,20 +1088,6 @@
                 </summary>
                 <div class="section-body">
                     <div id="upcomingEventsList"></div>
-                    <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
-                </div>
-            </details>
-
-            <details class="card section-card" id="section-gatherings">
-                <summary>
-                    <span class="summary-title">Upcoming Gatherings</span>
-                    <span class="summary-controls">
-                        <button class="admin-controls-inline section-default-btn" data-section="gatherings" onclick="toggleSectionDefault(event, 'gatherings')">Starts Closed</button>
-                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                    </span>
-                </summary>
-                <div class="section-body">
-                    <div id="upcomingGatheringsList"></div>
                     <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
                 </div>
             </details>
@@ -1852,7 +1888,7 @@
 
     // --- Rendering ---
 
-    const STATIC_SECTION_KEYS = ["meetings", "events", "gatherings", "birthdays", "starting_soon", "leadership"];
+    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "starting_soon", "leadership"];
     let staticSectionOpenStatesApplied = false;
 
     // Applied once per page load (not on every data refresh) so an admin's
@@ -1895,7 +1931,7 @@
         renderSectionDefaultButtons();
         renderMeetings();
         renderUpcomingEvents();
-        renderUpcomingGatherings();
+        renderGatheringsCarousel();
         renderUpcomingBirthdays();
         renderStartingSoonInto("startingSoonGeneralList");
         renderStartingSoonInto("startingSoonMissionariesList");
@@ -1993,13 +2029,82 @@
             : meetings.map(eventRowHtml).join("");
     }
 
-    function renderUpcomingGatherings() {
-        const el = document.getElementById("upcomingGatheringsList");
-        if (!el) return;
-        const gatherings = state.calendarEvents.filter((ev) => ev.event_type === "gathering");
-        el.innerHTML = gatherings.length === 0
-            ? `<p class="empty-hint">No gatherings on the calendar yet.</p>`
-            : gatherings.map(eventRowHtml).join("");
+    // Gatherings carousel -- swipeable, soonest first, above everything
+    // else on the General tab since these are time-sensitive.
+    function renderGatheringsCarousel() {
+        const wrap = document.getElementById("gatheringsCarouselWrap");
+        if (!wrap) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = state.calendarEvents
+            .filter((ev) => ev.event_type === "gathering" && ev.event_date_iso)
+            .map((ev) => ({ ev, start: new Date(`${ev.event_date_iso}T00:00:00`) }))
+            .filter(({ start }) => start >= today)
+            .sort((a, b) => a.start - b.start);
+
+        if (upcoming.length === 0) {
+            wrap.innerHTML = "";
+            return;
+        }
+
+        wrap.innerHTML = `
+            <div class="gatherings-carousel-section">
+                <div class="gatherings-carousel-title">Upcoming Gatherings</div>
+                <div class="gatherings-carousel" id="gatheringsCarousel">
+                    ${upcoming.map(({ ev, start }) => gatheringCardHtml(ev, start, today)).join("")}
+                </div>
+                ${upcoming.length > 1 ? `
+                    <div class="gatherings-carousel-dots" id="gatheringsCarouselDots">
+                        ${upcoming.map((_, i) => `<span class="carousel-dot${i === 0 ? " active" : ""}"></span>`).join("")}
+                    </div>` : ""}
+            </div>`;
+
+        setupGatheringsCarouselDots();
+    }
+
+    function gatheringCardHtml(ev, start, today) {
+        const dateLabel = start.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+        const days = Math.round((start - today) / 86400000);
+        const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+        const rsvps = ev.rsvps || [];
+        const rsvpHtml = rsvps.length > 0
+            ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}', '${ev.id}')">&times;</span></span>`).join("")
+            : `<span style="opacity:0.85;">No RSVPs yet -- be the first!</span>`;
+
+        return `
+            <div class="gathering-card">
+                <span class="badge-pill">${esc(when)}</span>
+                <h3>${esc(ev.title)}</h3>
+                <p class="gathering-card-date">${esc(dateLabel)}${ev.event_date ? ` • ${esc(ev.event_date)}` : ""}</p>
+                ${ev.description ? `<p class="gathering-card-desc">${esc(ev.description)}</p>` : ""}
+                ${addressRow(ev.address)}
+                ${linkRow(ev.link)}
+                <div class="gathering-rsvp-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="color:#fff; font-size:0.95rem;">RSVPs (${rsvps.length})</strong>
+                        <button class="btn btn-outline btn-sm" onclick="addRsvp('${ev.id}')">+ RSVP</button>
+                    </div>
+                    <div>${rsvpHtml}</div>
+                </div>
+            </div>`;
+    }
+
+    function setupGatheringsCarouselDots() {
+        const carousel = document.getElementById("gatheringsCarousel");
+        const dotsWrap = document.getElementById("gatheringsCarouselDots");
+        if (!carousel || !dotsWrap) return;
+        const cards = [...carousel.children];
+        const dots = [...dotsWrap.children];
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                    const idx = cards.indexOf(entry.target);
+                    dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+                }
+            });
+        }, { root: carousel, threshold: [0.6] });
+        cards.forEach((c) => observer.observe(c));
     }
 
     // Upcoming birthdays (derived from the Missionaries tab, read-only here)
