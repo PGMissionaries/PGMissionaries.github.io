@@ -70,7 +70,7 @@
         .login-mark {
             width: 56px; height: 56px;
             border-radius: 16px;
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             color: var(--primary);
             display: flex; align-items: center; justify-content: center;
             font-weight: 900;
@@ -152,7 +152,7 @@
         }
         .top-nav .tab-btn:hover { background: var(--primary-light); color: var(--primary); }
         .top-nav .tab-btn.active {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
             color: #fff;
             box-shadow: 0 4px 12px rgba(47, 111, 237, 0.35);
         }
@@ -193,7 +193,7 @@
             border-radius: 12px;
         }
         .bottom-nav .tab-btn .icon { width: 21px; height: 21px; }
-        .bottom-nav .tab-btn.active { background: var(--primary-light); color: var(--primary); box-shadow: none; }
+        .bottom-nav .tab-btn.active { background: linear-gradient(160deg, #eaf1ff, #d9e6ff); color: var(--primary); box-shadow: none; }
 
         main {
             padding: 1.5rem 1.25rem;
@@ -279,14 +279,14 @@
         .editable {
             padding: 10px;
             border: 2px dashed transparent;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: all 0.2s;
             line-height: 1.6;
         }
         .editable p { margin-top: 0; }
         .editable.editing {
-            border: 2px dashed var(--primary);
-            background-color: var(--primary-light);
+            border: 2px dashed rgba(47, 111, 237, 0.35);
+            background: linear-gradient(160deg, #f3f7ff, #eef3ff);
         }
 
         /* Urgent Badge */
@@ -349,7 +349,7 @@
         .birthday-avatar {
             width: 42px; height: 42px;
             border-radius: 50%;
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             display: flex; align-items: center; justify-content: center;
             font-size: 1rem;
             font-weight: 800;
@@ -385,7 +385,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-card);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -427,7 +427,7 @@
             width: 48px; height: 48px;
             border-radius: 14px;
             overflow: hidden;
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -510,7 +510,7 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             overflow: hidden;
         }
         .missionary-photo-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -573,7 +573,7 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             max-height: 42vh;
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #cddcff);
             overflow: hidden;
         }
         .profile-popup-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -591,7 +591,7 @@
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
             color: #fff;
             font-size: 0.68rem;
             font-weight: 800;
@@ -664,7 +664,7 @@
         }
 
         .btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
             color: #fff;
             border: none;
             padding: 10px 20px;
@@ -675,14 +675,14 @@
             transition: all 0.15s;
             font-size: 0.95rem;
         }
-        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-accent { background: var(--accent); color: var(--accent-text); }
-        .btn-accent:hover { background: #e6a600; }
+        .btn-accent { background: linear-gradient(135deg, var(--accent), #ffcf4d); color: var(--accent-text); }
+        .btn-accent:hover { filter: brightness(0.96); }
         .btn-outline { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); }
         .btn-outline:hover { background: var(--secondary); }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-danger:hover { background: #e6394a; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #ff6b78); color: #fff; }
+        .btn-danger:hover { filter: brightness(0.95); }
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
         .btn-block { width: 100%; }
 
@@ -909,7 +909,7 @@
             display: block;
             text-align: center;
             text-decoration: none;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
             color: #fff;
             border: none;
             padding: 12px;
@@ -918,7 +918,7 @@
             transition: all 0.2s;
             margin-bottom: 15px;
         }
-        .resource-link:hover { background: var(--primary-hover); }
+        .resource-link:hover { filter: brightness(0.95); }
 
         /* Contact / address / link rows with copy buttons */
         .info-row {
@@ -997,7 +997,7 @@
             height: 90px;
             border-radius: 50%;
             border: 3px dashed var(--primary);
-            background: var(--primary-light);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
             display: flex;
             align-items: center;
             justify-content: center;
