@@ -246,6 +246,20 @@
         }
         details.section-card[open] > summary .chevron { transform: rotate(180deg); }
         details.section-card .section-body { margin-top: 16px; }
+        details.section-card .summary-controls { display: flex; align-items: center; gap: 10px; }
+        .section-default-btn {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: inherit;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .section-default-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
 
         .empty-hint { color: var(--text-muted); font-size: 0.9rem; padding: 6px 0; }
 
@@ -800,10 +814,13 @@
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
 
-            <details class="card section-card">
+            <details class="card section-card" id="section-meetings">
                 <summary>
-                    Regular Meetings
-                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    <span class="summary-title">Regular Meetings</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="meetings" onclick="toggleSectionDefault(event, 'meetings')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
                 </summary>
                 <div class="section-body">
                     <div class="admin-controls" style="margin-bottom: 14px;">
@@ -813,10 +830,13 @@
                 </div>
             </details>
 
-            <details class="card section-card">
+            <details class="card section-card" id="section-events">
                 <summary>
-                    Upcoming Events
-                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    <span class="summary-title">Upcoming Events</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="events" onclick="toggleSectionDefault(event, 'events')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
                 </summary>
                 <div class="section-body">
                     <div id="upcomingEventsList"></div>
@@ -824,20 +844,26 @@
                 </div>
             </details>
 
-            <details class="card section-card">
+            <details class="card section-card" id="section-birthdays">
                 <summary>
-                    Upcoming Birthdays
-                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    <span class="summary-title">Upcoming Birthdays</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="birthdays" onclick="toggleSectionDefault(event, 'birthdays')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
                 </summary>
                 <div class="section-body">
                     <div id="upcomingBirthdaysList"></div>
                 </div>
             </details>
 
-            <details class="card section-card">
+            <details class="card section-card" id="section-leadership">
                 <summary>
-                    Leadership &amp; Advisors
-                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    <span class="summary-title">Leadership &amp; Advisors</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="leadership" onclick="toggleSectionDefault(event, 'leadership')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
                 </summary>
                 <div class="section-body">
                     <div class="admin-controls" style="margin-bottom: 20px;">
@@ -1099,7 +1125,8 @@
         districts: [],
         companionships: [],
         generalNotes: [],
-        meetings: []
+        meetings: [],
+        sectionSettings: {}
     };
 
     function esc(str) {
@@ -1283,7 +1310,7 @@
     async function loadAll() {
         const [
             meRes, missRes, leadRes, calRes, rsvpRes, sitesRes, gatherRes,
-            resRes, distRes, compRes, notesRes, meetingsRes
+            resRes, distRes, compRes, notesRes, meetingsRes, settingsRes
         ] = await Promise.all([
             db.from("missionaries").select("*").eq("auth_user_id", state.userId).maybeSingle(),
             db.from("missionaries").select("*").order("name"),
@@ -1296,7 +1323,8 @@
             db.from("districts").select("*").order("created_at"),
             db.from("companionships").select("*").order("created_at"),
             db.from("general_notes").select("*").order("created_at"),
-            db.from("meetings").select("*").order("created_at")
+            db.from("meetings").select("*").order("created_at"),
+            db.from("section_settings").select("*")
         ]);
 
         state.me = meRes.data ?? null;
@@ -1310,6 +1338,9 @@
         state.companionships = compRes.data ?? [];
         state.generalNotes = notesRes.data ?? [];
         state.meetings = meetingsRes.data ?? [];
+        const settingsMap = {};
+        (settingsRes.data ?? []).forEach((r) => { settingsMap[r.section_key] = r.default_open; });
+        state.sectionSettings = settingsMap;
 
         const rsvpsByEvent = {};
         (rsvpRes.data ?? []).forEach((r) => {
@@ -1337,7 +1368,47 @@
 
     // --- Rendering ---
 
+    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "leadership"];
+    let staticSectionOpenStatesApplied = false;
+
+    // Applied once per page load (not on every data refresh) so an admin's
+    // chosen default doesn't fight with a user's own open/closed clicks
+    // during their visit -- it only sets where things start out.
+    function applyInitialSectionOpenStates() {
+        if (staticSectionOpenStatesApplied) return;
+        staticSectionOpenStatesApplied = true;
+        STATIC_SECTION_KEYS.forEach((key) => {
+            const el = document.getElementById(`section-${key}`);
+            if (el) el.open = !!state.sectionSettings[key];
+        });
+    }
+
+    function renderSectionDefaultButtons() {
+        STATIC_SECTION_KEYS.forEach((key) => {
+            const btn = document.querySelector(`.section-default-btn[data-section="${key}"]`);
+            if (btn) btn.textContent = state.sectionSettings[key] ? "Starts Open" : "Starts Closed";
+        });
+    }
+
+    async function toggleSectionDefault(event, key) {
+        event.preventDefault();
+        event.stopPropagation();
+        const next = !state.sectionSettings[key];
+        state.sectionSettings[key] = next;
+        renderSectionDefaultButtons();
+        await db.from("section_settings").update({ default_open: next }).eq("section_key", key);
+    }
+
+    async function toggleNoteDefault(event, id, current) {
+        event.preventDefault();
+        event.stopPropagation();
+        await db.from("general_notes").update({ default_open: !current }).eq("id", id);
+        await loadAll();
+    }
+
     function renderApp() {
+        applyInitialSectionOpenStates();
+        renderSectionDefaultButtons();
         renderMeetings();
         renderUpcomingEvents();
         renderUpcomingBirthdays();
@@ -1533,10 +1604,13 @@
             const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
             const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
             el.innerHTML += `
-                <details class="card section-card" style="${borderStyle}">
+                <details class="card section-card" style="${borderStyle}"${note.default_open ? " open" : ""}>
                     <summary>
                         <span>${esc(note.title)} ${badge}</span>
-                        ${chevronIcon(20)}
+                        <span class="summary-controls">
+                            <button class="admin-controls-inline section-default-btn" onclick="toggleNoteDefault(event, '${note.id}', ${note.default_open ? "true" : "false"})">${note.default_open ? "Starts Open" : "Starts Closed"}</button>
+                            ${chevronIcon(20)}
+                        </span>
                     </summary>
                     <div class="section-body">
                         <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
