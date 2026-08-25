@@ -191,7 +191,7 @@
         @media (max-width: 768px) {
             .top-nav { display: none; }
             .bottom-nav { display: block; }
-            main { padding-bottom: 92px; }
+            main { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
             header h1 { font-size: 1.2rem; }
         }
 
