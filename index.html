@@ -167,6 +167,13 @@
             box-shadow: 0 -6px 20px rgba(20, 40, 80, 0.10);
             z-index: 500;
             padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+            /* Forces GPU compositing for this layer -- without it, some mobile
+               browsers (particularly in-app WebViews) let a `position: fixed`
+               element drift with the page during momentum scrolling instead
+               of staying pinned to the viewport. */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
         }
         .bottom-nav-inner {
             display: flex;
@@ -478,8 +485,6 @@
             background: var(--bg-card);
             padding: 18px;
             border-radius: 14px;
-            font-size: 1.15rem;
-            font-weight: 800;
             text-align: center;
             color: var(--text-main);
             box-shadow: var(--shadow-sm);
@@ -487,6 +492,7 @@
             border-top: 4px solid var(--accent);
             margin-bottom: 12px;
         }
+        .comp-block-legacy-names { font-size: 1.1rem; font-weight: 800; }
 
         /* Missionary Cards -- collapsed = square photo + name; click to expand details */
         .missionary-card {
@@ -847,6 +853,8 @@
             display: block;
         }
         .event-chip:hover { background: var(--primary); color: #fff; }
+        .event-chip.event-chip-gathering { background: var(--accent-soft); color: var(--accent-text); }
+        .event-chip.event-chip-gathering:hover { background: var(--accent); }
         .event-chip.event-chip-urgent { background: var(--danger); color: #fff; }
         .event-chip.event-chip-urgent:hover { background: #e6394a; }
 
@@ -1034,6 +1042,20 @@
                 </div>
             </details>
 
+            <details class="card section-card" id="section-gatherings">
+                <summary>
+                    <span class="summary-title">Upcoming Gatherings</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="gatherings" onclick="toggleSectionDefault(event, 'gatherings')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div id="upcomingGatheringsList"></div>
+                    <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
+                </div>
+            </details>
+
             <details class="card section-card" id="section-birthdays">
                 <summary>
                     <span class="summary-title">Upcoming Birthdays</span>
@@ -1080,7 +1102,7 @@
         <!-- Calendar Tab -->
         <div id="calendar" class="tab-content">
             <h2>Zone Calendar</h2>
-            <div class="admin-controls" style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
                 <button class="btn" onclick="openCalendarEventModal()">+ Add Event</button>
             </div>
 
@@ -1151,7 +1173,7 @@
         <div id="companionships" class="tab-content">
             <h2>Companionships</h2>
             <div class="admin-controls" style="margin-bottom: 20px;">
-                <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
+                <button class="btn" onclick="openCompanionshipModal()">+ Add Companionship</button>
             </div>
 
             <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
@@ -1296,6 +1318,13 @@
             <label>Title</label>
             <input type="text" id="cevTitle" placeholder="e.g. Zone Conference">
 
+            <label>Type</label>
+            <select id="cevType">
+                <option value="meeting">Meeting</option>
+                <option value="gathering">Gathering</option>
+            </select>
+            <p class="field-hint">Gatherings also show in their own "Upcoming Gatherings" section on the General tab.</p>
+
             <label>Date</label>
             <input type="date" id="cevDate">
             <p class="field-hint">Leave blank for a recurring/no-fixed-date event -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
@@ -1352,6 +1381,21 @@
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn" onclick="saveDistrictMembers()">Save Members</button>
                 <button class="btn btn-outline" onclick="closeDistrictMembersModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Companionship Members Modal -->
+    <div id="companionshipModal" class="modal">
+        <div class="modal-content">
+            <h2 id="companionshipModalTitle" style="color: var(--text-main); margin-top:0;">Add Companionship</h2>
+            <input type="hidden" id="compId">
+            <p class="field-hint" style="margin-top:0;">Check who's in this companionship (2 or more missionaries).</p>
+            <div id="companionshipChecklist" style="max-height: 340px; overflow-y: auto; margin-top: 12px;"></div>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveCompanionship()">Save Companionship</button>
+                <button class="btn btn-outline" onclick="closeCompanionshipModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -1808,7 +1852,7 @@
 
     // --- Rendering ---
 
-    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "starting_soon", "leadership"];
+    const STATIC_SECTION_KEYS = ["meetings", "events", "gatherings", "birthdays", "starting_soon", "leadership"];
     let staticSectionOpenStatesApplied = false;
 
     // Applied once per page load (not on every data refresh) so an admin's
@@ -1851,6 +1895,7 @@
         renderSectionDefaultButtons();
         renderMeetings();
         renderUpcomingEvents();
+        renderUpcomingGatherings();
         renderUpcomingBirthdays();
         renderStartingSoonInto("startingSoonGeneralList");
         renderStartingSoonInto("startingSoonMissionariesList");
@@ -1921,28 +1966,40 @@
         await loadAll();
     }
 
-    // Upcoming events (General tab summary -- full CRUD stays on the Calendar tab)
+    // Upcoming events / gatherings (General tab summaries -- full CRUD stays
+    // on the Calendar tab). Split by event_type so each section only shows
+    // its own kind.
+    function eventRowHtml(ev) {
+        const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+        const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+        return `
+            <div class="data-row">
+                <div class="data-row-head">
+                    <h4>${esc(ev.title)} ${badge}</h4>
+                    <span class="badge-pill">${esc(ev.event_date)}</span>
+                </div>
+                ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
+                ${addressRow(ev.address)}
+                ${linkRow(ev.link)}
+            </div>`;
+    }
+
     function renderUpcomingEvents() {
         const el = document.getElementById("upcomingEventsList");
         if (!el) return;
-        if (state.calendarEvents.length === 0) {
-            el.innerHTML = `<p class="empty-hint">No events on the calendar yet.</p>`;
-            return;
-        }
-        el.innerHTML = state.calendarEvents.map((ev) => {
-            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
-            const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
-            return `
-                <div class="data-row">
-                    <div class="data-row-head">
-                        <h4>${esc(ev.title)} ${badge}</h4>
-                        <span class="badge-pill">${esc(ev.event_date)}</span>
-                    </div>
-                    ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
-                    ${addressRow(ev.address)}
-                    ${linkRow(ev.link)}
-                </div>`;
-        }).join("");
+        const meetings = state.calendarEvents.filter((ev) => ev.event_type !== "gathering");
+        el.innerHTML = meetings.length === 0
+            ? `<p class="empty-hint">No events on the calendar yet.</p>`
+            : meetings.map(eventRowHtml).join("");
+    }
+
+    function renderUpcomingGatherings() {
+        const el = document.getElementById("upcomingGatheringsList");
+        if (!el) return;
+        const gatherings = state.calendarEvents.filter((ev) => ev.event_type === "gathering");
+        el.innerHTML = gatherings.length === 0
+            ? `<p class="empty-hint">No gatherings on the calendar yet.</p>`
+            : gatherings.map(eventRowHtml).join("");
     }
 
     // Upcoming birthdays (derived from the Missionaries tab, read-only here)
@@ -2146,7 +2203,8 @@
         grid.innerHTML = cells.map(({ cellDate, otherMonth, isToday, dayEvents }) => {
             const chips = dayEvents.map((ev) => {
                 const isUrgent = ev.color && ev.color.toLowerCase() === "red";
-                return `<button class="event-chip${isUrgent ? " event-chip-urgent" : ""}" onclick="openEventDetailsModal('${ev.id}')" title="${esc(ev.title)}">${esc(ev.title)}</button>`;
+                const chipClass = isUrgent ? " event-chip-urgent" : (ev.event_type === "gathering" ? " event-chip-gathering" : "");
+                return `<button class="event-chip${chipClass}" onclick="openEventDetailsModal('${ev.id}')" title="${esc(ev.title)}">${esc(ev.title)}</button>`;
             }).join("");
             return `
                 <div class="calendar-day${otherMonth ? " other-month" : ""}${isToday ? " today" : ""}">
@@ -2226,6 +2284,7 @@
             document.getElementById("calendarEventModalTitle").innerText = "Edit Event";
             document.getElementById("cevId").value = ev.id;
             document.getElementById("cevTitle").value = ev.title || "";
+            document.getElementById("cevType").value = ev.event_type || "meeting";
             document.getElementById("cevDate").value = ev.event_date_iso || "";
             document.getElementById("cevTimeLabel").value = ev.event_date || "";
             document.getElementById("cevDesc").value = ev.description || "";
@@ -2236,6 +2295,7 @@
             document.getElementById("calendarEventModalTitle").innerText = "Add Event";
             document.getElementById("cevId").value = "";
             document.getElementById("cevTitle").value = "";
+            document.getElementById("cevType").value = "meeting";
             document.getElementById("cevDate").value = "";
             document.getElementById("cevTimeLabel").value = "";
             document.getElementById("cevDesc").value = "";
@@ -2251,6 +2311,7 @@
         const id = document.getElementById("cevId").value;
         const payload = {
             title: document.getElementById("cevTitle").value,
+            event_type: document.getElementById("cevType").value,
             event_date_iso: document.getElementById("cevDate").value || null,
             event_date: document.getElementById("cevTimeLabel").value,
             description: document.getElementById("cevDesc").value,
@@ -2554,24 +2615,67 @@
     }
 
     // Companionships
+    // Companionships -- each member links to a real Missionary profile
+    // (photo/name), same pattern as district leaders/members. Tapping a
+    // member opens their full profile popup.
     function renderCompanionships() {
         const el = document.getElementById("companionshipsList");
         el.innerHTML = "";
         state.companionships.forEach((comp) => {
+            const members = (comp.missionary_ids || [])
+                .map((id) => state.missionaries.find((m) => m.id === id))
+                .filter(Boolean);
+            const body = members.length > 0
+                ? `<div class="mini-avatar-grid" style="justify-content:center;">${members.map((m) => `
+                    <div class="mini-avatar" style="cursor:pointer;" onclick="openMissionaryProfile('${m.id}')">
+                        ${avatarCircleHtml(m)}
+                        <span>${esc(m.name)}</span>
+                    </div>`).join("")}</div>`
+                : `<div class="comp-block-legacy-names">${esc(comp.names)}</div>`;
             el.innerHTML += `
                 <div class="comp-block">
-                    ${esc(comp.names)}
-                    <div class="admin-controls" style="margin-top:10px;">
+                    ${body}
+                    <div class="admin-controls" style="margin-top:14px; display:flex; gap:8px; justify-content:center;">
+                        <button class="btn btn-outline btn-sm" onclick="openCompanionshipModal('${comp.id}')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteCompanionship('${comp.id}')">Remove</button>
                     </div>
                 </div>`;
         });
     }
 
-    async function addCompanionship() {
-        const names = prompt("Enter Companionship Names (e.g., Elder Smith & Elder Jones):");
-        if (!names) return;
-        await db.from("companionships").insert({ names });
+    function openCompanionshipModal(id = null) {
+        if (state.missionaries.length === 0) {
+            alert("Add a missionary first (Missionaries tab), then come back to build a companionship.");
+            return;
+        }
+        document.getElementById("compId").value = id || "";
+        document.getElementById("companionshipModalTitle").innerText = id ? "Edit Companionship" : "Add Companionship";
+        const comp = id ? state.companionships.find((c) => c.id === id) : null;
+        const currentIds = comp?.missionary_ids || [];
+        document.getElementById("companionshipChecklist").innerHTML = state.missionaries.map((m) => `
+            <label class="member-check-row">
+                <input type="checkbox" value="${m.id}" ${currentIds.includes(m.id) ? "checked" : ""}>
+                ${avatarCircleHtml(m, "small")}
+                <span>${esc(m.name)}</span>
+            </label>`).join("");
+        document.getElementById("companionshipModal").style.display = "flex";
+    }
+    function closeCompanionshipModal() { document.getElementById("companionshipModal").style.display = "none"; }
+
+    async function saveCompanionship() {
+        const id = document.getElementById("compId").value;
+        const checked = [...document.querySelectorAll("#companionshipChecklist input:checked")].map((cb) => cb.value);
+        if (checked.length < 2) { alert("Select at least 2 missionaries."); return; }
+        const names = checked.map((mid) => state.missionaries.find((m) => m.id === mid)?.name).filter(Boolean).join(", ");
+        const payload = { missionary_ids: checked, names };
+        let error;
+        if (id) {
+            ({ error } = await db.from("companionships").update(payload).eq("id", id));
+        } else {
+            ({ error } = await db.from("companionships").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeCompanionshipModal();
         await loadAll();
     }
 
