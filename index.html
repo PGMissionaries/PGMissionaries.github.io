@@ -7,7 +7,7 @@
     <title>Zone Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             /* Bright Gospel Blue theme */
@@ -35,7 +35,7 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--bg-body);
@@ -67,9 +67,15 @@
             width: 100%;
             max-width: 380px;
         }
-        .login-logo {
-            font-size: 3rem;
-            margin-bottom: 6px;
+        .login-mark {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900;
+            font-size: 1.6rem;
+            margin: 0 auto 16px;
         }
 
         header {
@@ -84,8 +90,16 @@
             flex-wrap: wrap;
         }
         header .brand { display: flex; align-items: center; gap: 10px; }
-        header .brand .brand-emoji { font-size: 1.8rem; }
         header h1 { font-size: 1.4rem; letter-spacing: 0.2px; }
+        .brand-mark {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
 
         .header-controls {
             display: flex;
@@ -166,12 +180,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
             padding: 7px 4px 5px;
             font-size: 0.65rem;
             border-radius: 12px;
         }
-        .bottom-nav .tab-btn .icon { font-size: 1.4rem; line-height: 1; }
+        .bottom-nav .tab-btn .icon { width: 21px; height: 21px; }
         .bottom-nav .tab-btn.active { background: var(--primary-light); color: var(--primary); box-shadow: none; }
 
         @media (max-width: 768px) {
@@ -205,32 +219,35 @@
             color: var(--text-main);
             font-size: 1.1rem;
             margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        /* Stats banner */
-        .stats-banner {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .stat-pill {
-            flex: 1 1 130px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            box-shadow: var(--shadow-sm);
+        /* Icons */
+        .icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+        /* Collapsible sections */
+        details.section-card { display: block; }
+        details.section-card > summary {
+            list-style: none;
+            cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
         }
-        .stat-icon { font-size: 1.5rem; }
-        .stat-value { font-size: 1.3rem; font-weight: 900; color: var(--primary); }
-        .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; }
+        details.section-card > summary::-webkit-details-marker { display: none; }
+        details.section-card .chevron {
+            width: 20px; height: 20px;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        details.section-card[open] > summary .chevron { transform: rotate(180deg); }
+        details.section-card .section-body { margin-top: 16px; }
+
+        .empty-hint { color: var(--text-muted); font-size: 0.9rem; padding: 6px 0; }
 
         .editable {
             padding: 10px;
@@ -239,18 +256,7 @@
             transition: all 0.2s;
             line-height: 1.6;
         }
-        .editable h4 {
-            color: var(--primary);
-            margin-bottom: 5px;
-            margin-top: 15px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 3px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
         .editable p { margin-top: 0; }
-
         .editable.editing {
             border: 2px dashed var(--primary);
             background-color: var(--primary-light);
@@ -269,17 +275,65 @@
             text-transform: uppercase;
         }
 
-        /* Birthday badge */
-        .birthday-badge {
-            background: var(--accent);
-            color: var(--accent-text);
-            font-size: 0.72rem;
-            padding: 3px 9px;
+        /* Data rows: meetings / events */
+        .data-row {
+            background: var(--secondary);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            font-weight: 800;
-            margin-left: 6px;
-            vertical-align: middle;
+            padding: 14px;
+            margin-bottom: 12px;
         }
+        .data-row:last-child { margin-bottom: 0; }
+        .data-row-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+        .data-row-head h4 { margin: 0; font-size: 1rem; color: var(--text-main); }
+        .data-row-desc { color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 8px 0; line-height: 1.5; }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .badge-pill.badge-today { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+        /* Birthdays */
+        .birthday-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .birthday-row:last-child { border-bottom: none; }
+        .birthday-avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .birthday-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .birthday-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .birthday-info strong { color: var(--text-main); font-size: 0.95rem; }
+        .birthday-info .text-muted { font-size: 0.82rem; color: var(--text-muted); }
 
         /* Leader Profiles */
         .leader-card {
@@ -294,9 +348,11 @@
             position: relative;
         }
         .leader-emoji {
-            font-size: 34px;
-            width: 62px;
-            height: 62px;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             border: 2px solid var(--primary);
             display: flex;
@@ -304,10 +360,40 @@
             justify-content: center;
             background: var(--bg-card);
             flex-shrink: 0;
+            overflow: hidden;
         }
+        .leader-emoji img { width: 100%; height: 100%; object-fit: cover; }
         .leader-info { flex: 1; min-width: 0; }
         .leader-info h4 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.05rem; }
         .leader-info .role-title { color: var(--primary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; }
+        .leader-phone {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .leader-phone .info-link { flex: 1; min-width: 0; font-weight: 700; color: var(--text-main); text-decoration: none; font-size: 0.95rem; }
+        .leader-phone .info-link:hover { color: var(--primary); }
+        .leader-phone .icon { color: var(--text-muted); }
+
+        .btn-copy-lg {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .btn-copy-lg:hover { background: var(--primary); color: #fff; }
+        .btn-copy-lg.copied { background: var(--success); color: #fff; }
 
         /* Grid Layouts */
         .grid {
@@ -359,8 +445,19 @@
         }
         .role-badge.active { display: block; }
 
+        .birthday-badge {
+            background: var(--accent);
+            color: var(--accent-text);
+            font-size: 0.72rem;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-weight: 800;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
         .missionary-emoji {
-            font-size: 56px;
+            font-size: 44px;
             width: 110px;
             height: 110px;
             border-radius: 50%;
@@ -530,14 +627,6 @@
             outline: none;
             border-color: var(--primary);
         }
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .checkbox-row input { width: auto; margin: 0; }
-        .checkbox-row label { margin: 0; }
         .field-hint { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
         .error-text { color: var(--danger); font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; font-weight: 700; }
 
@@ -545,18 +634,6 @@
         .admin-mode .admin-controls { display: block; }
         .admin-mode .admin-controls-inline { display: inline-block; }
         .admin-controls-inline { display: none; }
-
-        .list-item {
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            transition: all 0.2s;
-        }
-        .list-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
 
         /* Search input styling */
         #missionarySearch, #companionshipSearch {
@@ -596,44 +673,51 @@
         }
         .resource-link:hover { background: var(--primary-hover); }
 
-        /* Contact / address rows with copy buttons */
+        /* Contact / address / link rows with copy buttons */
         .info-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
             background: var(--secondary);
             border-radius: 10px;
             padding: 9px 10px;
             margin-bottom: 8px;
         }
+        .info-row .icon { color: var(--text-muted); }
         .info-link {
             color: var(--text-main);
             text-decoration: none;
             font-weight: 700;
             font-size: 0.9rem;
+            flex: 1;
+            min-width: 0;
         }
+        .info-link.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .info-link:hover { color: var(--primary); }
         .info-text {
             color: var(--text-main);
             font-weight: 700;
             font-size: 0.9rem;
+            flex: 1;
+            min-width: 0;
         }
         .copy-btn {
-            background: var(--primary-light);
+            background: var(--bg-card);
             color: var(--primary);
-            border: none;
+            border: 1px solid var(--border);
             width: 30px;
             height: 30px;
             min-width: 30px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
             transition: all 0.15s;
         }
-        .copy-btn:hover { background: var(--primary); color: #fff; }
-        .copy-btn.copied { background: var(--success); color: #fff; }
+        .copy-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .copy-btn.copied { background: var(--success); color: #fff; border-color: var(--success); }
 
         /* RSVP Styling */
         .rsvp-badge {
@@ -651,24 +735,6 @@
             color: var(--danger);
             margin-left: 5px;
             font-weight: bold;
-        }
-
-        .invite-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-        .invite-row:last-child { border-bottom: none; }
-        .invite-code {
-            font-family: monospace;
-            background: var(--primary-light);
-            padding: 2px 8px;
-            border-radius: 6px;
-            color: var(--primary);
-            letter-spacing: 1px;
         }
 
         /* Avatar upload in profile modal */
@@ -700,7 +766,7 @@
 <!-- Login Screen -->
 <div id="loginScreen">
     <div class="login-card">
-        <div class="login-logo">🌤️</div>
+        <div class="login-mark">Z</div>
         <h2 style="color: var(--primary); margin-bottom: 4px;">Zone Hub</h2>
         <p style="color: var(--text-muted); margin-bottom: 22px;">Enter the site password to continue.</p>
         <input type="password" id="sitePassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid var(--border); background:var(--secondary); color:var(--text-main); box-sizing:border-box; font-family:inherit; font-size:1rem;" onkeypress="if(event.key === 'Enter') doSignIn()">
@@ -713,7 +779,7 @@
 <div id="appContent">
     <header>
         <div class="brand">
-            <span class="brand-emoji">🌤️</span>
+            <span class="brand-mark">Z</span>
             <h1>Zone Hub</h1>
         </div>
         <div class="header-controls">
@@ -737,20 +803,52 @@
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
 
-            <div id="statsBanner" class="stats-banner"></div>
-
-            <div class="card">
-                <h3>📋 Regular Meetings</h3>
-                <div id="meetingsText" class="editable">Loading...</div>
-            </div>
-
-            <div class="card">
-                <h3>🧑‍💼 Leadership &amp; Advisors</h3>
-                <div class="admin-controls" style="margin-bottom: 20px;">
-                    <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+            <details class="card section-card" open>
+                <summary>
+                    Regular Meetings
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div class="admin-controls" style="margin-bottom: 14px;">
+                        <button class="btn" onclick="addMeeting()">+ Add Meeting</button>
+                    </div>
+                    <div id="meetingsList"></div>
                 </div>
-                <div id="leadersList"></div>
-            </div>
+            </details>
+
+            <details class="card section-card" open>
+                <summary>
+                    Upcoming Events
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div id="upcomingEventsList"></div>
+                    <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
+                </div>
+            </details>
+
+            <details class="card section-card" open>
+                <summary>
+                    Upcoming Birthdays
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div id="upcomingBirthdaysList"></div>
+                </div>
+            </details>
+
+            <details class="card section-card" open>
+                <summary>
+                    Leadership &amp; Advisors
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div class="admin-controls" style="margin-bottom: 20px;">
+                        <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+                    </div>
+                    <div id="leadersList"></div>
+                </div>
+            </details>
 
             <div class="admin-controls" style="margin: 25px 0 15px 0;">
                 <button class="btn btn-accent" onclick="addGeneralNote()">+ Add New Note Section</button>
@@ -774,7 +872,7 @@
             <h2>Service Opportunities</h2>
             <div class="grid">
                 <div class="card">
-                    <h3>🤝 Approved Sites</h3>
+                    <h3>Approved Sites</h3>
                     <div class="admin-controls" style="margin-bottom: 15px;">
                         <button class="btn btn-accent" onclick="addSite()">+ Add Site</button>
                     </div>
@@ -782,7 +880,7 @@
                 </div>
 
                 <div class="card">
-                    <h3>🎉 Gatherings &amp; Ideas</h3>
+                    <h3>Gatherings &amp; Ideas</h3>
                     <div style="margin-bottom: 15px;">
                         <button class="btn btn-accent" onclick="openGatheringModal()">+ Add Gathering / Idea</button>
                     </div>
@@ -817,7 +915,7 @@
                 <button class="btn" onclick="addCompanionship()">+ Add Companionship</button>
             </div>
 
-            <input type="text" id="companionshipSearch" placeholder="🔍 Search companionships..." onkeyup="filterCompanionships()">
+            <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
 
             <div id="companionshipsList" class="grid"></div>
         </div>
@@ -827,7 +925,7 @@
             <h2>Missionary Profiles</h2>
             <button class="btn btn-accent" onclick="openProfileModal()" style="margin-bottom: 20px;">+ Add New Missionary</button>
 
-            <input type="text" id="missionarySearch" placeholder="🔍 Search missionaries by name..." onkeyup="filterMissionaries()">
+            <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
 
             <div id="missionaryList" class="grid"></div>
         </div>
@@ -836,33 +934,48 @@
     <!-- Bottom tab bar (mobile) -->
     <nav class="bottom-nav">
         <div class="bottom-nav-inner">
-            <button class="tab-btn active" data-tab="general" onclick="switchTab('general')"><span class="icon">🏠</span>General</button>
-            <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')"><span class="icon">🗓️</span>Calendar</button>
-            <button class="tab-btn" data-tab="service" onclick="switchTab('service')"><span class="icon">🤝</span>Service</button>
-            <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')"><span class="icon">📚</span>Docs</button>
-            <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')"><span class="icon">🧭</span>Districts</button>
-            <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')"><span class="icon">👥</span>Comps</button>
-            <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')"><span class="icon">🪪</span>People</button>
+            <button class="tab-btn active" data-tab="general" onclick="switchTab('general')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+                General
+            </button>
+            <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16"/><path d="M8 3.5v4"/><path d="M16 3.5v4"/></svg>
+                Calendar
+            </button>
+            <button class="tab-btn" data-tab="service" onclick="switchTab('service')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="11" rx="2"/><path d="M8.5 8.5V7a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5"/><path d="M3.5 13.5h17"/></svg>
+                Service
+            </button>
+            <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6c2.2-1.3 5.3-1.3 8 0 2.7-1.3 5.8-1.3 8 0v12.5c-2.2-1.3-5.3-1.3-8 0-2.7-1.3-5.8-1.3-8 0z"/><path d="M12 6v12.5"/></svg>
+                Docs
+            </button>
+            <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>
+                Districts
+            </button>
+            <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3"/><circle cx="16" cy="9.5" r="2.4"/><path d="M3.5 20c0-3.4 2.3-6 5-6s5 2.6 5 6"/><path d="M13.2 14.3c1.9.3 3.3 2.6 3.3 5.7"/></svg>
+                Comps
+            </button>
+            <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16.5c0-1.9 1.3-3 3-3s3 1.1 3 3"/><path d="M13.5 9.5h5"/><path d="M13.5 13h5"/></svg>
+                People
+            </button>
         </div>
     </nav>
 
     <!-- Leader Modal -->
     <div id="leaderModal" class="modal">
         <div class="modal-content">
-            <h2 style="color: var(--text-main); margin-top:0;">Edit Leader/Advisor</h2>
-            <input type="hidden" id="ldrId">
+            <h2 style="color: var(--text-main); margin-top:0;">Add Leader/Advisor</h2>
+
+            <label>Missionary</label>
+            <select id="ldrMissionary"></select>
+            <p class="field-hint">Their name, photo and phone number come from their Missionary profile.</p>
 
             <label>Role / Title</label>
-            <input type="text" id="ldrRole" placeholder="e.g. Zone Leaders, Service Advisors">
-
-            <label>Name(s)</label>
-            <input type="text" id="ldrName" placeholder="e.g. Elder Smith & Elder Jones">
-
-            <label>Phone Number</label>
-            <input type="text" id="ldrPhone" placeholder="e.g. 555-0100">
-
-            <label>Profile Emoji</label>
-            <input type="text" id="ldrEmoji" placeholder="Enter an emoji (e.g. 👨‍💼)" maxlength="5">
+            <input type="text" id="ldrRole" placeholder="e.g. Zone Leader, Service Advisor">
 
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn" onclick="saveLeader()">Save Leader</button>
@@ -887,7 +1000,7 @@
             <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
 
             <label>Emoji</label>
-            <input type="text" id="gathEmoji" placeholder="Enter an emoji (e.g. 🛕)" maxlength="5">
+            <input type="text" id="gathEmoji" placeholder="Optional emoji" maxlength="5">
 
             <label>Theme Color</label>
             <input type="color" id="gathColor" value="#2f6fed">
@@ -906,8 +1019,8 @@
             <input type="hidden" id="profId">
 
             <div class="avatar-upload" onclick="document.getElementById('profPhotoFile').click()">
-                <div id="profAvatarPreview" class="avatar-preview">👤</div>
-                <div class="avatar-upload-hint">📷 Tap to change photo</div>
+                <div id="profAvatarPreview" class="avatar-preview">?</div>
+                <div class="avatar-upload-hint">Tap to change photo</div>
             </div>
             <input type="file" id="profPhotoFile" accept="image/*" style="display:none" onchange="previewSelectedPhoto(this)">
 
@@ -915,7 +1028,7 @@
             <input type="text" id="profName" placeholder="e.g. Elder Smith">
 
             <label>Profile Emoji (shown if no photo)</label>
-            <input type="text" id="profEmoji" placeholder="e.g. 🚴‍♂️" maxlength="5">
+            <input type="text" id="profEmoji" placeholder="Optional, e.g. initials work too" maxlength="5">
 
             <label>Theme Color</label>
             <input type="color" id="profColor" value="#2f6fed">
@@ -989,13 +1102,28 @@
         districts: [],
         companionships: [],
         generalNotes: [],
-        meetingsHtml: ""
+        meetings: []
     };
 
     function esc(str) {
         return String(str ?? "").replace(/[&<>"']/g, (c) => ({
             "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
         }[c]));
+    }
+
+    // --- Minimal inline icon set (kept small & monochrome on purpose) ---
+
+    const ICON_PATHS = {
+        chevron: '<path d="M6 9l6 6 6-6"/>',
+        check: '<path d="M5 13l4 4L19 7"/>',
+        copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M4.5 15.5v-9a2 2 0 0 1 2-2h9"/>',
+        phone: '<path d="M6 4.5h2.6l1.4 3.8-1.8 1.7c.9 2.5 2.7 4.3 5.2 5.2l1.7-1.8 3.8 1.4V18a1.5 1.5 0 0 1-1.6 1.5C10.8 18.9 5.1 13.2 4.5 7.1 4.4 6.2 5.1 5.4 6 4.5z"/>',
+        pin: '<path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+        link: '<path d="M9.5 14.5l5-5"/><path d="M13 6.5h3a4 4 0 0 1 0 8h-2"/><path d="M11 17.5H8a4 4 0 0 1 0-8h2"/>',
+        clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
+    };
+    function icon(name, size = 18) {
+        return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name] || ""}</svg>`;
     }
 
     // --- Copy-to-clipboard + contact row helpers ---
@@ -1015,12 +1143,14 @@
             try { document.execCommand("copy"); } catch (e2) { /* no-op */ }
             ta.remove();
         }
-        const original = btn.textContent;
-        btn.textContent = "✓";
+        const original = btn.innerHTML;
+        btn.innerHTML = btn.classList.contains("btn-copy-lg")
+            ? `${icon("check", 16)}<span>Copied</span>`
+            : icon("check", 15);
         btn.classList.add("copied");
         clearTimeout(btn._copyTimeout);
         btn._copyTimeout = setTimeout(() => {
-            btn.textContent = original;
+            btn.innerHTML = original;
             btn.classList.remove("copied");
         }, 1200);
     }
@@ -1030,8 +1160,9 @@
         const digits = phone.replace(/[^0-9+]/g, "");
         return `
             <div class="info-row">
-                <a class="info-link" href="tel:${esc(digits)}">📞 ${esc(phone)}</a>
-                <button class="copy-btn" data-copy="${esc(phone)}" onclick="copyToClipboard(this)" title="Copy phone number">📋</button>
+                ${icon("phone", 16)}
+                <a class="info-link" href="tel:${esc(digits)}">${esc(phone)}</a>
+                <button class="copy-btn" data-copy="${esc(phone)}" onclick="copyToClipboard(this)" title="Copy phone number">${icon("copy", 15)}</button>
             </div>`;
     }
 
@@ -1039,32 +1170,48 @@
         if (!address) return "";
         return `
             <div class="info-row">
-                <a class="info-link" href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" rel="noopener noreferrer">📍 ${esc(address)}</a>
-                <button class="copy-btn" data-copy="${esc(address)}" onclick="copyToClipboard(this)" title="Copy address">📋</button>
+                ${icon("pin", 16)}
+                <a class="info-link" href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" rel="noopener noreferrer">${esc(address)}</a>
+                <button class="copy-btn" data-copy="${esc(address)}" onclick="copyToClipboard(this)" title="Copy address">${icon("copy", 15)}</button>
             </div>`;
     }
 
-    function copyableRow(icon, value) {
+    function linkRow(url) {
+        if (!url) return "";
+        const display = url.replace(/^https?:\/\//, "");
+        return `
+            <div class="info-row">
+                ${icon("link", 16)}
+                <a class="info-link truncate" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(display)}</a>
+                <button class="copy-btn" data-copy="${esc(url)}" onclick="copyToClipboard(this)" title="Copy link">${icon("copy", 15)}</button>
+            </div>`;
+    }
+
+    function copyableRow(value) {
         if (!value) return "";
         return `
             <div class="info-row">
-                <span class="info-text">${icon ? icon + " " : ""}${esc(value)}</span>
-                <button class="copy-btn" data-copy="${esc(value)}" onclick="copyToClipboard(this)" title="Copy">📋</button>
+                <span class="info-text">${esc(value)}</span>
+                <button class="copy-btn" data-copy="${esc(value)}" onclick="copyToClipboard(this)" title="Copy">${icon("copy", 15)}</button>
             </div>`;
     }
 
-    // Best-effort birthday check against free-text birthday fields like "October 24".
+    // Best-effort birthday math against free-text birthday fields like "October 24".
     const MONTH_NAMES = ["january","february","march","april","may","june","july","august","september","october","november","december"];
-    function isBirthdayToday(birthdayText) {
-        if (!birthdayText) return false;
+    function daysUntilBirthday(birthdayText) {
+        if (!birthdayText) return null;
         const text = String(birthdayText).toLowerCase();
         const monthIdx = MONTH_NAMES.findIndex((m) => text.includes(m) || text.includes(m.slice(0, 3)));
-        if (monthIdx === -1) return false;
+        if (monthIdx === -1) return null;
         const dayMatch = text.match(/\b(\d{1,2})\b/);
-        if (!dayMatch) return false;
+        if (!dayMatch) return null;
         const day = parseInt(dayMatch[1], 10);
+        if (day < 1 || day > 31) return null;
         const today = new Date();
-        return monthIdx === today.getMonth() && day === today.getDate();
+        today.setHours(0, 0, 0, 0);
+        let next = new Date(today.getFullYear(), monthIdx, day);
+        if (next < today) next = new Date(today.getFullYear() + 1, monthIdx, day);
+        return Math.round((next - today) / 86400000);
     }
 
     // --- Auth ---
@@ -1136,7 +1283,7 @@
     async function loadAll() {
         const [
             meRes, missRes, leadRes, calRes, rsvpRes, sitesRes, gatherRes,
-            resRes, distRes, compRes, notesRes, infoRes
+            resRes, distRes, compRes, notesRes, meetingsRes
         ] = await Promise.all([
             db.from("missionaries").select("*").eq("auth_user_id", state.userId).maybeSingle(),
             db.from("missionaries").select("*").order("name"),
@@ -1149,7 +1296,7 @@
             db.from("districts").select("*").order("created_at"),
             db.from("companionships").select("*").order("created_at"),
             db.from("general_notes").select("*").order("created_at"),
-            db.from("general_info").select("*").maybeSingle()
+            db.from("meetings").select("*").order("created_at")
         ]);
 
         state.me = meRes.data ?? null;
@@ -1162,7 +1309,7 @@
         state.districts = distRes.data ?? [];
         state.companionships = compRes.data ?? [];
         state.generalNotes = notesRes.data ?? [];
-        state.meetingsHtml = infoRes.data?.meetings_html ?? "";
+        state.meetings = meetingsRes.data ?? [];
 
         const rsvpsByEvent = {};
         (rsvpRes.data ?? []).forEach((r) => {
@@ -1191,8 +1338,9 @@
     // --- Rendering ---
 
     function renderApp() {
-        document.getElementById("meetingsText").innerHTML = state.meetingsHtml || "Click to add meeting info...";
-        renderStats();
+        renderMeetings();
+        renderUpcomingEvents();
+        renderUpcomingBirthdays();
         renderLeadership();
         renderGeneralNotes();
         renderCalendar();
@@ -1207,29 +1355,7 @@
         filterCompanionships();
     }
 
-    function renderStats() {
-        const el = document.getElementById("statsBanner");
-        if (!el) return;
-        const stats = [
-            { icon: "🪪", label: "Missionaries", value: state.missionaries.length },
-            { icon: "🧭", label: "Districts", value: state.districts.length },
-            { icon: "👥", label: "Companionships", value: state.companionships.length },
-            { icon: "🗓️", label: "Events", value: state.calendarEvents.length }
-        ];
-        el.innerHTML = stats.map((s) => `
-            <div class="stat-pill">
-                <span class="stat-icon">${s.icon}</span>
-                <span class="stat-value">${s.value}</span>
-                <span class="stat-label">${esc(s.label)}</span>
-            </div>`).join("");
-    }
-
     function setEditableElements() {
-        const meetings = document.getElementById("meetingsText");
-        meetings.contentEditable = state.isAdmin;
-        meetings.classList.toggle("editing", state.isAdmin);
-        meetings.onblur = () => updateMeetings(meetings.innerHTML);
-
         document.querySelectorAll(".district-content").forEach((el) => {
             el.contentEditable = state.isAdmin;
             el.classList.toggle("editing", state.isAdmin);
@@ -1243,50 +1369,150 @@
         });
     }
 
-    async function updateMeetings(html) {
-        if (!state.isAdmin) return;
-        state.meetingsHtml = html;
-        await db.from("general_info").update({ meetings_html: html }).eq("id", true);
+    // Meetings
+    function renderMeetings() {
+        const el = document.getElementById("meetingsList");
+        if (!el) return;
+        if (state.meetings.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No meetings added yet.</p>`;
+            return;
+        }
+        el.innerHTML = state.meetings.map((mtg) => `
+            <div class="data-row">
+                <div class="data-row-head">
+                    <h4>${esc(mtg.title)}</h4>
+                    ${mtg.time_text ? `<span class="badge-pill">${icon("clock", 14)} ${esc(mtg.time_text)}</span>` : ""}
+                </div>
+                ${mtg.details ? `<p class="data-row-desc">${esc(mtg.details)}</p>` : ""}
+                ${addressRow(mtg.address)}
+                <div class="admin-controls">
+                    <button class="btn btn-danger btn-sm" onclick="deleteMeeting('${mtg.id}')" style="margin-top:4px;">Delete Meeting</button>
+                </div>
+            </div>`).join("");
     }
 
-    // Leadership
+    async function addMeeting() {
+        const title = prompt("Meeting name (e.g. District Meeting):");
+        if (!title) return;
+        const time_text = prompt("Time (e.g. 3:30 PM, or 'Every Monday 7am'):");
+        const address = prompt("Address (optional):");
+        const details = prompt("Other details (optional):");
+        await db.from("meetings").insert({ title, time_text, address, details });
+        await loadAll();
+    }
+
+    async function deleteMeeting(id) {
+        if (!confirm("Delete this meeting?")) return;
+        await db.from("meetings").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Upcoming events (General tab summary -- full CRUD stays on the Calendar tab)
+    function renderUpcomingEvents() {
+        const el = document.getElementById("upcomingEventsList");
+        if (!el) return;
+        if (state.calendarEvents.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No events on the calendar yet.</p>`;
+            return;
+        }
+        el.innerHTML = state.calendarEvents.map((ev) => {
+            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+            return `
+                <div class="data-row">
+                    <div class="data-row-head">
+                        <h4>${esc(ev.title)} ${badge}</h4>
+                        <span class="badge-pill">${esc(ev.event_date)}</span>
+                    </div>
+                    ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
+                    ${addressRow(ev.address)}
+                    ${linkRow(ev.link)}
+                </div>`;
+        }).join("");
+    }
+
+    // Upcoming birthdays (derived from the Missionaries tab, read-only here)
+    function renderUpcomingBirthdays() {
+        const el = document.getElementById("upcomingBirthdaysList");
+        if (!el) return;
+        const upcoming = state.missionaries
+            .map((m) => ({ m, days: daysUntilBirthday(m.birthday) }))
+            .filter((x) => x.days !== null)
+            .sort((a, b) => a.days - b.days)
+            .slice(0, 5);
+        if (upcoming.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No birthdays on file yet.</p>`;
+            return;
+        }
+        el.innerHTML = upcoming.map(({ m, days }) => {
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : esc((m.name || "?").trim().charAt(0).toUpperCase());
+            const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+            return `
+                <div class="birthday-row">
+                    <div class="birthday-avatar">${avatar}</div>
+                    <div class="birthday-info">
+                        <strong>${esc(m.name)}</strong>
+                        <span class="text-muted">${esc(m.birthday)}</span>
+                    </div>
+                    <span class="badge-pill${days === 0 ? " badge-today" : ""}">${when}</span>
+                </div>`;
+        }).join("");
+    }
+
+    // Leadership -- each row links to a Missionary profile for photo/name/phone
     function renderLeadership() {
         const el = document.getElementById("leadersList");
-        el.innerHTML = "";
-        state.leadership.forEach((ldr) => {
-            el.innerHTML += `
+        if (state.leadership.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No leaders added yet.</p>`;
+            return;
+        }
+        el.innerHTML = state.leadership.map((ldr) => {
+            const m = state.missionaries.find((x) => x.id === ldr.missionary_id);
+            const name = m ? m.name : (ldr.name || "Unknown");
+            const phone = m ? m.phone : ldr.phone;
+            const avatar = m && m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(name)}">`
+                : esc((name || "?").trim().charAt(0).toUpperCase());
+            const phoneHtml = phone ? `
+                <div class="leader-phone">
+                    ${icon("phone", 16)}
+                    <a class="info-link" href="tel:${esc(phone.replace(/[^0-9+]/g, ""))}">${esc(phone)}</a>
+                    <button class="btn-copy-lg" data-copy="${esc(phone)}" onclick="copyToClipboard(this)">${icon("copy", 16)}<span>Copy</span></button>
+                </div>` : "";
+            return `
                 <div class="leader-card">
-                    <div class="leader-emoji">${esc(ldr.emoji || "👤")}</div>
+                    <div class="leader-emoji">${avatar}</div>
                     <div class="leader-info">
                         <div class="role-title">${esc(ldr.role_title)}</div>
-                        <h4>${esc(ldr.name)}</h4>
-                        ${phoneRow(ldr.phone)}
+                        <h4>${esc(name)}</h4>
+                        ${phoneHtml}
                     </div>
                     <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
                         <button class="btn btn-danger btn-sm" onclick="deleteLeader('${ldr.id}')">Delete</button>
                     </div>
                 </div>`;
-        });
+        }).join("");
     }
 
     function openLeaderModal() {
-        document.getElementById("ldrId").value = "";
+        if (state.missionaries.length === 0) {
+            alert("Add a missionary first (Missionaries tab), then come back to assign them a leadership role.");
+            return;
+        }
+        const sel = document.getElementById("ldrMissionary");
+        sel.innerHTML = state.missionaries.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("");
         document.getElementById("ldrRole").value = "";
-        document.getElementById("ldrName").value = "";
-        document.getElementById("ldrPhone").value = "";
-        document.getElementById("ldrEmoji").value = "";
         document.getElementById("leaderModal").style.display = "flex";
     }
     function closeLeaderModal() { document.getElementById("leaderModal").style.display = "none"; }
 
     async function saveLeader() {
-        const payload = {
-            role_title: document.getElementById("ldrRole").value,
-            name: document.getElementById("ldrName").value,
-            phone: document.getElementById("ldrPhone").value,
-            emoji: document.getElementById("ldrEmoji").value
-        };
-        const { error } = await db.from("leadership").insert(payload);
+        const missionaryId = document.getElementById("ldrMissionary").value;
+        const roleTitle = document.getElementById("ldrRole").value;
+        if (!missionaryId) { alert("Choose a missionary."); return; }
+        const { error } = await db.from("leadership").insert({ role_title: roleTitle, missionary_id: missionaryId });
         if (error) { alert(error.message); return; }
         closeLeaderModal();
         await loadAll();
@@ -1298,7 +1524,6 @@
         await loadAll();
     }
 
-
     // General notes
     function renderGeneralNotes() {
         const el = document.getElementById("generalNotesContainer");
@@ -1308,13 +1533,18 @@
             const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
             const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
             el.innerHTML += `
-                <div class="card" style="${borderStyle}">
-                    <h3>${esc(note.title)} ${badge}</h3>
-                    <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
-                    <div class="admin-controls">
-                        <button class="btn btn-danger btn-sm" onclick="deleteGeneralNote('${note.id}')" style="margin-top:10px;">Delete Section</button>
+                <details class="card section-card" style="${borderStyle}" open>
+                    <summary>
+                        <span>${esc(note.title)} ${badge}</span>
+                        ${icon("chevron", 20).replace('class="icon"', 'class="chevron"')}
+                    </summary>
+                    <div class="section-body">
+                        <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
+                        <div class="admin-controls">
+                            <button class="btn btn-danger btn-sm" onclick="deleteGeneralNote('${note.id}')" style="margin-top:10px;">Delete Section</button>
+                        </div>
                     </div>
-                </div>`;
+                </details>`;
         });
     }
 
@@ -1354,9 +1584,11 @@
 
             el.innerHTML += `
                 <div class="card" style="${borderStyle}">
-                    <h3 style="color:var(--primary);">🗓️ ${esc(ev.title)} ${badge}</h3>
+                    <h3 style="color:var(--primary);">${esc(ev.title)} ${badge}</h3>
                     <p style="margin-bottom: 5px;"><strong style="color:var(--text-main);">Date:</strong> ${esc(ev.event_date)}</p>
                     <p style="color:var(--text-muted); margin-top:0;">${esc(ev.description)}</p>
+                    ${addressRow(ev.address)}
+                    ${linkRow(ev.link)}
 
                     <div style="margin-top: 15px; background: var(--secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1378,8 +1610,10 @@
         if (!title) return;
         const date = prompt("Event Date (e.g., Oct 24):");
         const desc = prompt("Event Description:");
+        const address = prompt("Event Address (optional):");
+        const link = prompt("Event Link (optional, e.g. a signup form or map link):");
         const color = prompt("Event Color (type 'red' for Mandatory/Urgent, or leave blank):", "");
-        await db.from("calendar_events").insert({ title, event_date: date, description: desc, color });
+        await db.from("calendar_events").insert({ title, event_date: date, description: desc, address, link, color });
         await loadAll();
     }
 
@@ -1414,11 +1648,11 @@
         el.innerHTML = "";
         state.serviceSites.forEach((site) => {
             el.innerHTML += `
-                <div class="list-item">
+                <div class="data-row">
                     <h4 style="color:var(--primary); margin:0 0 6px 0; font-size: 1.1rem;">${esc(site.title)}</h4>
                     <p style="margin:0 0 8px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(site.description)}</p>
                     ${addressRow(site.address)}
-                    ${copyableRow("📞", site.contact)}
+                    ${copyableRow(site.contact)}
                     <div class="admin-controls">
                         <button class="btn btn-danger btn-sm" onclick="deleteSite('${site.id}')" style="margin-top: 6px;">Delete Site</button>
                     </div>
@@ -1450,11 +1684,11 @@
             const gColor = g.color || "var(--primary)";
             const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${esc(g.emoji)}</span>` : "";
             el.innerHTML += `
-                <div class="list-item" style="border-left: 4px solid ${esc(gColor)}; padding-left: 15px;">
+                <div class="data-row" style="border-left: 4px solid ${esc(gColor)};">
                     <h4 style="color:var(--text-main); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
                         ${gEmoji} ${esc(g.title)}
                     </h4>
-                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">🗓️ ${esc(g.date_text)}</p>
+                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">${esc(g.date_text)}</p>
                     <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(g.description)}</p>
                     <div style="display:flex; gap:10px;">
                         <button class="btn btn-outline btn-sm" onclick="openGatheringModal('${g.id}')">Edit Idea</button>
@@ -1521,7 +1755,7 @@
         state.resources.forEach((res) => {
             el.innerHTML += `
                 <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <h3 style="text-align: center; justify-content: center;">📄 ${esc(res.title)}</h3>
+                    <h3 style="text-align: center;">${esc(res.title)}</h3>
                     <a href="${esc(res.url)}" target="_blank" rel="noopener noreferrer" class="resource-link">Open Document</a>
                     <div class="admin-controls">
                         <button class="btn btn-danger btn-block" onclick="deleteResource('${res.id}')">Delete</button>
@@ -1553,7 +1787,7 @@
             el.innerHTML += `
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3>🧭 ${esc(d.name)}</h3>
+                        <h3>${esc(d.name)}</h3>
                         <div class="admin-controls" style="margin:0; display:flex; gap:8px;">
                             <button class="btn btn-outline btn-sm" onclick="renameDistrict('${d.id}')">Rename</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteDistrict('${d.id}')">Delete</button>
@@ -1597,7 +1831,7 @@
         state.companionships.forEach((comp) => {
             el.innerHTML += `
                 <div class="comp-block">
-                    👥 ${esc(comp.names)}
+                    ${esc(comp.names)}
                     <div class="admin-controls" style="margin-top:10px;">
                         <button class="btn btn-danger btn-sm" onclick="deleteCompanionship('${comp.id}')">Remove</button>
                     </div>
@@ -1644,17 +1878,17 @@
         el.innerHTML = "";
         state.missionaries.forEach((m) => {
             const roleBadge = m.service_role ? `<div class="role-badge active">${esc(m.service_role)}</div>` : "";
-            const birthdayBadge = isBirthdayToday(m.birthday) ? `<span class="birthday-badge">🎂 Birthday!</span>` : "";
+            const birthdayBadge = daysUntilBirthday(m.birthday) === 0 ? `<span class="birthday-badge">Birthday</span>` : "";
             const avatar = m.photo_url
                 ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
-                : esc(m.emoji || "👤");
+                : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
             const mColor = m.color || "var(--primary)";
 
             el.innerHTML += `
                 <div class="missionary-card" id="miss-card-${m.id}" style="border-top: 6px solid ${esc(mColor)};">
                     ${roleBadge}
                     <div class="missionary-emoji" style="border-color: ${esc(mColor)};" onclick="openProfileModal('${m.id}')" title="Tap to edit profile & photo">${avatar}</div>
-                    <div class="avatar-tap-hint">📷 Tap photo to edit</div>
+                    <div class="avatar-tap-hint">Tap photo to edit</div>
                     <h3 class="missionary-name">${esc(m.name)} ${birthdayBadge}</h3>
                     <div class="cookie-banner" id="banner-${m.id}">${esc(m.name)} has ${m.cookies || 0} cookies</div>
 
@@ -1700,7 +1934,7 @@
 
     function setAvatarPreview(photoUrl, emoji) {
         const preview = document.getElementById("profAvatarPreview");
-        preview.innerHTML = photoUrl ? `<img src="${esc(photoUrl)}" alt="Preview">` : esc(emoji || "👤");
+        preview.innerHTML = photoUrl ? `<img src="${esc(photoUrl)}" alt="Preview">` : esc(emoji || "?");
     }
 
     function previewSelectedPhoto(input) {
@@ -1744,7 +1978,7 @@
             document.getElementById("profBirthday").value = "";
             document.getElementById("profCompanion").value = "";
             document.getElementById("profDistrict").value = "";
-            setAvatarPreview(null, "👤");
+            setAvatarPreview(null, "?");
         }
         document.getElementById("profileError").textContent = "";
         modal.style.display = "flex";
