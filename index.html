@@ -2626,9 +2626,22 @@
 
     async function renameDistrict(id) {
         const d = state.districts.find((x) => x.id === id);
-        const name = prompt("Rename district:", d?.name || "");
-        if (!name) return;
-        await db.from("districts").update({ name }).eq("id", id);
+        const oldName = d?.name || "";
+        const newName = prompt("Rename district:", oldName);
+        if (!newName || newName.trim() === oldName.trim()) return;
+
+        // Membership is matched by comparing each missionary's District
+        // field against this name -- renaming the district without also
+        // updating every member's profile would silently drop all of them
+        // out of it (this is exactly the bug that was just reported).
+        const memberIds = state.missionaries
+            .filter((m) => (m.district || "").trim().toLowerCase() === oldName.trim().toLowerCase())
+            .map((m) => m.id);
+
+        await db.from("districts").update({ name: newName }).eq("id", id);
+        if (memberIds.length > 0) {
+            await db.from("missionaries").update({ district: newName }).in("id", memberIds);
+        }
         await loadAll();
     }
 
