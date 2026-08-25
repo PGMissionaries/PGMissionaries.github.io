@@ -860,6 +860,14 @@
         <div id="general" class="tab-content active">
             <h2>General Information</h2>
 
+            <!-- Dynamic General Notes Container -- announcements live front and center,
+                 above the routine recurring sections below. -->
+            <div id="generalNotesContainer"></div>
+
+            <div class="admin-controls" style="margin: 0 0 25px 0;">
+                <button class="btn btn-accent" onclick="addGeneralNote()">+ Add New Note Section</button>
+            </div>
+
             <details class="card section-card" id="section-meetings">
                 <summary>
                     <span class="summary-title">Regular Meetings</span>
@@ -931,13 +939,6 @@
                     <div id="leadersList"></div>
                 </div>
             </details>
-
-            <div class="admin-controls" style="margin: 25px 0 15px 0;">
-                <button class="btn btn-accent" onclick="addGeneralNote()">+ Add New Note Section</button>
-            </div>
-
-            <!-- Dynamic General Notes Container -->
-            <div id="generalNotesContainer"></div>
         </div>
 
         <!-- Calendar Tab -->
