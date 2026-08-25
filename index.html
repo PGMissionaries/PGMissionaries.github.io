@@ -346,7 +346,7 @@
         }
         .birthday-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .birthday-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-        .birthday-info strong { color: var(--text-main); font-size: 0.95rem; }
+        .birthday-info strong { color: var(--text-main); font-size: 0.95rem; overflow-wrap: anywhere; }
         .birthday-info .text-muted { font-size: 0.82rem; color: var(--text-muted); }
 
         /* Leader Profiles */
@@ -426,16 +426,15 @@
         .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-circle.small { width: 32px; height: 32px; border-radius: 9px; font-size: 0.8rem; }
 
-        .mini-avatar-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-        .mini-avatar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 60px; text-align: center; }
+        .mini-avatar-grid { display: flex; flex-wrap: wrap; gap: 14px; }
+        .mini-avatar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 84px; text-align: center; }
         .mini-avatar span {
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
             font-weight: 700;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            line-height: 1.25;
             width: 100%;
+            overflow-wrap: anywhere;
         }
 
         /* Specificity note: beats the generic ".modal-content label" rule,
@@ -659,7 +658,7 @@
             letter-spacing: 0.3px;
         }
         .modal-content input[type="text"], .modal-content input[type="password"],
-        .modal-content input[type="email"], .modal-content select {
+        .modal-content input[type="email"], .modal-content input[type="date"], .modal-content select {
             width: 100%;
             padding: 12px;
             margin-top: 6px;
@@ -904,6 +903,19 @@
                 </div>
             </details>
 
+            <details class="card section-card" id="section-starting_soon">
+                <summary>
+                    <span class="summary-title">Starting Soon</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="starting_soon" onclick="toggleSectionDefault(event, 'starting_soon')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div id="startingSoonGeneralList"></div>
+                </div>
+            </details>
+
             <details class="card section-card" id="section-leadership">
                 <summary>
                     <span class="summary-title">Leadership &amp; Advisors</span>
@@ -994,6 +1006,16 @@
         <div id="missionaries" class="tab-content">
             <h2>Missionary Profiles</h2>
             <button class="btn btn-accent" onclick="openProfileModal()" style="margin-bottom: 20px;">+ Add New Missionary</button>
+
+            <details class="card section-card" open>
+                <summary>
+                    <span class="summary-title">Starting Soon</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div id="startingSoonMissionariesList"></div>
+                </div>
+            </details>
 
             <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
 
@@ -1155,6 +1177,10 @@
 
             <label>Birthday</label>
             <input type="text" id="profBirthday" placeholder="e.g. October 24">
+
+            <label>Start Date</label>
+            <input type="date" id="profStartDate">
+            <p class="field-hint">If this is in the future, they'll show up in "Starting Soon" until then.</p>
 
             <label>Companion</label>
             <input type="text" id="profCompanion" placeholder="Current Companion">
@@ -1368,6 +1394,47 @@
         return Math.round((next - today) / 86400000);
     }
 
+    // Missionaries with a future (or today) start_date, soonest first.
+    // Shared by the General tab and Missionaries tab "Starting Soon" sections.
+    function startingSoonList() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return state.missionaries
+            .filter((m) => m.start_date)
+            .map((m) => {
+                const start = new Date(`${m.start_date}T00:00:00`);
+                return { m, start, days: Math.round((start - today) / 86400000) };
+            })
+            .filter((x) => !isNaN(x.days) && x.days >= 0)
+            .sort((a, b) => a.days - b.days);
+    }
+
+    function renderStartingSoonInto(elId) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const upcoming = startingSoonList();
+        if (upcoming.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No new missionaries starting soon.</p>`;
+            return;
+        }
+        el.innerHTML = upcoming.map(({ m, days, start }) => {
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
+            const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+            const dateLabel = start.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+            return `
+                <div class="birthday-row">
+                    <div class="birthday-avatar">${avatar}</div>
+                    <div class="birthday-info">
+                        <strong>${esc(m.name)}</strong>
+                        <span class="text-muted">${esc(dateLabel)}</span>
+                    </div>
+                    <span class="badge-pill${days === 0 ? " badge-today" : ""}">${when}</span>
+                </div>`;
+        }).join("");
+    }
+
     // --- Auth ---
 
     async function doSignIn() {
@@ -1495,7 +1562,7 @@
 
     // --- Rendering ---
 
-    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "leadership"];
+    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "starting_soon", "leadership"];
     let staticSectionOpenStatesApplied = false;
 
     // Applied once per page load (not on every data refresh) so an admin's
@@ -1539,6 +1606,8 @@
         renderMeetings();
         renderUpcomingEvents();
         renderUpcomingBirthdays();
+        renderStartingSoonInto("startingSoonGeneralList");
+        renderStartingSoonInto("startingSoonMissionariesList");
         renderLeadership();
         renderGeneralNotes();
         renderCalendar();
@@ -2239,6 +2308,7 @@
             document.getElementById("profPhone").value = m.phone || "";
             document.getElementById("profSites").value = m.sites || "";
             document.getElementById("profBirthday").value = m.birthday || "";
+            document.getElementById("profStartDate").value = m.start_date || "";
             document.getElementById("profCompanion").value = m.companion || "";
             document.getElementById("profDistrict").value = m.district || "";
             setAvatarPreview(m.photo_url, m.emoji);
@@ -2252,6 +2322,7 @@
             document.getElementById("profPhone").value = "";
             document.getElementById("profSites").value = "";
             document.getElementById("profBirthday").value = "";
+            document.getElementById("profStartDate").value = "";
             document.getElementById("profCompanion").value = "";
             document.getElementById("profDistrict").value = "";
             setAvatarPreview(null, "?");
@@ -2289,6 +2360,7 @@
             phone,
             sites: document.getElementById("profSites").value,
             birthday: document.getElementById("profBirthday").value,
+            start_date: document.getElementById("profStartDate").value || null,
             companion: document.getElementById("profCompanion").value,
             district: document.getElementById("profDistrict").value
         };
