@@ -409,6 +409,53 @@
         .btn-copy-lg:hover { background: var(--primary); color: #fff; }
         .btn-copy-lg.copied { background: var(--success); color: #fff; }
 
+        /* Small roster avatars (district members, member picker) */
+        .avatar-circle {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-circle.small { width: 32px; height: 32px; border-radius: 9px; font-size: 0.8rem; }
+
+        .mini-avatar-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+        .mini-avatar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 60px; text-align: center; }
+        .mini-avatar span {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        /* Specificity note: beats the generic ".modal-content label" rule,
+           which would otherwise force display:block on these rows. */
+        .modal-content .member-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 4px;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: none;
+        }
+        .member-check-row:last-child { border-bottom: none; }
+        .member-check-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--primary); }
+
         /* Grid Layouts */
         .grid {
             display: grid;
@@ -1007,6 +1054,40 @@
         </div>
     </div>
 
+    <!-- District Leaders Modal -->
+    <div id="districtLeadersModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-top:0;">Set District Leaders</h2>
+            <input type="hidden" id="distLeadersId">
+
+            <label>Leader 1</label>
+            <select id="distLeader1"></select>
+
+            <label>Leader 2</label>
+            <select id="distLeader2"></select>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveDistrictLeaders()">Save Leaders</button>
+                <button class="btn btn-outline" onclick="closeDistrictLeadersModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- District Members Modal -->
+    <div id="districtMembersModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-top:0;">Manage Members</h2>
+            <input type="hidden" id="distMembersId">
+            <p class="field-hint" style="margin-top:0;">Checking someone here moves them out of any other district.</p>
+            <div id="distMembersChecklist" style="max-height: 340px; overflow-y: auto; margin-top: 12px;"></div>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveDistrictMembers()">Save Members</button>
+                <button class="btn btn-outline" onclick="closeDistrictMembersModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Gathering Modal -->
     <div id="gatheringModal" class="modal">
         <div class="modal-content">
@@ -1221,6 +1302,52 @@
                 <span class="info-text">${esc(value)}</span>
                 <button class="copy-btn" data-copy="${esc(value)}" onclick="copyToClipboard(this)" title="Copy">${icon("copy", 15)}</button>
             </div>`;
+    }
+
+    // Shared "leader" card: photo/emoji/initial avatar, name, role label, and
+    // a big labeled Copy button on the phone number. Used by the General tab's
+    // Leadership section and by district leader slots.
+    function leaderCardHtml(person, roleTitle) {
+        if (!person) return "";
+        const name = person.name || "Unknown";
+        const avatar = person.photo_url
+            ? `<img src="${esc(person.photo_url)}" alt="${esc(name)}">`
+            : esc(person.emoji || name.trim().charAt(0).toUpperCase());
+        const phoneHtml = person.phone ? `
+            <div class="leader-phone">
+                ${icon("phone", 16)}
+                <a class="info-link" href="tel:${esc(person.phone.replace(/[^0-9+]/g, ""))}">${esc(person.phone)}</a>
+                <button class="btn-copy-lg" data-copy="${esc(person.phone)}" onclick="copyToClipboard(this)">${icon("copy", 16)}<span>Copy</span></button>
+            </div>` : "";
+        return `
+            <div class="leader-card">
+                <div class="leader-emoji">${avatar}</div>
+                <div class="leader-info">
+                    <div class="role-title">${esc(roleTitle || "")}</div>
+                    <h4>${esc(name)}</h4>
+                    ${phoneHtml}
+                </div>
+            </div>`;
+    }
+
+    function emptyLeaderSlot() {
+        return `<div class="leader-card" style="justify-content:center; color:var(--text-muted); font-weight:700; font-size:0.9rem;">No leader assigned</div>`;
+    }
+
+    function avatarCircleHtml(m, sizeClass) {
+        const avatar = m.photo_url
+            ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+            : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
+        return `<div class="avatar-circle${sizeClass ? " " + sizeClass : ""}">${avatar}</div>`;
+    }
+
+    function memberTilesHtml(members) {
+        if (members.length === 0) return `<p class="empty-hint">No members assigned yet.</p>`;
+        return `<div class="mini-avatar-grid">${members.map((m) => `
+            <div class="mini-avatar">
+                ${avatarCircleHtml(m)}
+                <span>${esc(m.name)}</span>
+            </div>`).join("")}</div>`;
     }
 
     // Best-effort birthday math against free-text birthday fields like "October 24".
@@ -1541,25 +1668,12 @@
         }
         el.innerHTML = state.leadership.map((ldr) => {
             const m = state.missionaries.find((x) => x.id === ldr.missionary_id);
-            const name = m ? m.name : (ldr.name || "Unknown");
-            const phone = m ? m.phone : ldr.phone;
-            const avatar = m && m.photo_url
-                ? `<img src="${esc(m.photo_url)}" alt="${esc(name)}">`
-                : esc((name || "?").trim().charAt(0).toUpperCase());
-            const phoneHtml = phone ? `
-                <div class="leader-phone">
-                    ${icon("phone", 16)}
-                    <a class="info-link" href="tel:${esc(phone.replace(/[^0-9+]/g, ""))}">${esc(phone)}</a>
-                    <button class="btn-copy-lg" data-copy="${esc(phone)}" onclick="copyToClipboard(this)">${icon("copy", 16)}<span>Copy</span></button>
-                </div>` : "";
+            // Legacy rows (added before leaders were linked to a missionary
+            // profile) still carry their own name/phone/emoji as a fallback.
+            const person = m || { name: ldr.name, phone: ldr.phone, emoji: ldr.emoji, photo_url: null };
             return `
-                <div class="leader-card">
-                    <div class="leader-emoji">${avatar}</div>
-                    <div class="leader-info">
-                        <div class="role-title">${esc(ldr.role_title)}</div>
-                        <h4>${esc(name)}</h4>
-                        ${phoneHtml}
-                    </div>
+                <div style="position: relative;">
+                    ${leaderCardHtml(person, ldr.role_title)}
                     <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
                         <button class="btn btn-danger btn-sm" onclick="deleteLeader('${ldr.id}')">Delete</button>
                     </div>
@@ -1858,6 +1972,9 @@
         const el = document.getElementById("districtsList");
         el.innerHTML = "";
         state.districts.forEach((d) => {
+            const members = state.missionaries.filter((m) => (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase());
+            const leader1 = state.missionaries.find((m) => m.id === d.leader1_id);
+            const leader2 = state.missionaries.find((m) => m.id === d.leader2_id);
             el.innerHTML += `
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1868,6 +1985,19 @@
                         </div>
                     </div>
                     <div class="editable district-content" data-id="${d.id}">${d.content_html || ""}</div>
+
+                    <h4 style="margin: 18px 0 10px; color: var(--text-main); font-size: 0.95rem;">Leaders</h4>
+                    <div class="admin-controls" style="margin-bottom: 12px;">
+                        <button class="btn btn-outline btn-sm" onclick="openDistrictLeadersModal('${d.id}')">Set Leaders</button>
+                    </div>
+                    ${leader1 ? leaderCardHtml(leader1, "Leader") : emptyLeaderSlot()}
+                    ${leader2 ? leaderCardHtml(leader2, "Leader") : emptyLeaderSlot()}
+
+                    <h4 style="margin: 18px 0 10px; color: var(--text-main); font-size: 0.95rem;">Members (${members.length})</h4>
+                    <div class="admin-controls" style="margin-bottom: 12px;">
+                        <button class="btn btn-outline btn-sm" onclick="openDistrictMembersModal('${d.id}')">Manage Members</button>
+                    </div>
+                    ${memberTilesHtml(members)}
                 </div>`;
         });
     }
@@ -1896,6 +2026,71 @@
     async function updateDistrictContent(id, html) {
         if (!state.isAdmin) return;
         await db.from("districts").update({ content_html: html }).eq("id", id);
+    }
+
+    // District leaders: pick up to 2 missionaries from a dropdown
+    function openDistrictLeadersModal(id) {
+        const d = state.districts.find((x) => x.id === id);
+        document.getElementById("distLeadersId").value = id;
+        const options = `<option value="">None</option>` + state.missionaries.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("");
+        const sel1 = document.getElementById("distLeader1");
+        const sel2 = document.getElementById("distLeader2");
+        sel1.innerHTML = options;
+        sel2.innerHTML = options;
+        sel1.value = d.leader1_id || "";
+        sel2.value = d.leader2_id || "";
+        document.getElementById("districtLeadersModal").style.display = "flex";
+    }
+    function closeDistrictLeadersModal() { document.getElementById("districtLeadersModal").style.display = "none"; }
+
+    async function saveDistrictLeaders() {
+        const id = document.getElementById("distLeadersId").value;
+        const leader1_id = document.getElementById("distLeader1").value || null;
+        const leader2_id = document.getElementById("distLeader2").value || null;
+        await db.from("districts").update({ leader1_id, leader2_id }).eq("id", id);
+        closeDistrictLeadersModal();
+        await loadAll();
+    }
+
+    // District members: a checkable roster. Checking someone here sets their
+    // `district` text field to this district's name (and unchecking clears
+    // it), reusing the Missionaries tab's existing district field rather
+    // than adding a separate membership table.
+    function openDistrictMembersModal(id) {
+        const d = state.districts.find((x) => x.id === id);
+        document.getElementById("distMembersId").value = id;
+        const list = document.getElementById("distMembersChecklist");
+        list.innerHTML = state.missionaries.map((m) => {
+            const checked = (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase();
+            return `
+                <label class="member-check-row">
+                    <input type="checkbox" value="${m.id}" ${checked ? "checked" : ""}>
+                    ${avatarCircleHtml(m, "small")}
+                    <span>${esc(m.name)}</span>
+                </label>`;
+        }).join("");
+        document.getElementById("districtMembersModal").style.display = "flex";
+    }
+    function closeDistrictMembersModal() { document.getElementById("districtMembersModal").style.display = "none"; }
+
+    async function saveDistrictMembers() {
+        const id = document.getElementById("distMembersId").value;
+        const d = state.districts.find((x) => x.id === id);
+        const checkboxes = [...document.querySelectorAll("#distMembersChecklist input[type=checkbox]")];
+        const updates = [];
+        checkboxes.forEach((cb) => {
+            const m = state.missionaries.find((x) => x.id === cb.value);
+            if (!m) return;
+            const wasMember = (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase();
+            if (cb.checked && !wasMember) {
+                updates.push(db.from("missionaries").update({ district: d.name }).eq("id", m.id));
+            } else if (!cb.checked && wasMember) {
+                updates.push(db.from("missionaries").update({ district: "" }).eq("id", m.id));
+            }
+        });
+        await Promise.all(updates);
+        closeDistrictMembersModal();
+        await loadAll();
     }
 
     // Companionships
