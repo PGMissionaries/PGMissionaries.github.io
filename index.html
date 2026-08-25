@@ -1350,7 +1350,12 @@
 
             <label>Date</label>
             <input type="date" id="cevDate">
-            <p class="field-hint">Leave blank for a recurring/no-fixed-date event -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
+            <p class="field-hint">Leave blank only if there's truly no fixed date -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="cevRepeats">
+                <label for="cevRepeats">Repeats weekly (same day &amp; time)</label>
+            </div>
 
             <label>Time / Label</label>
             <input type="text" id="cevTimeLabel" placeholder="e.g. 11:00am-3:00pm, or 'Every Friday'">
@@ -1994,11 +1999,14 @@
     function eventRowHtml(ev) {
         const isUrgent = ev.color && ev.color.toLowerCase() === "red";
         const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+        const whenLabel = ev.repeats_weekly && ev.event_date_iso
+            ? `Every ${new Date(`${ev.event_date_iso}T00:00:00`).toLocaleDateString(undefined, { weekday: "long" })}${ev.event_date ? ` • ${ev.event_date}` : ""}`
+            : ev.event_date;
         return `
             <div class="data-row">
                 <div class="data-row-head">
                     <h4>${esc(ev.title)} ${badge}</h4>
-                    <span class="badge-pill">${esc(ev.event_date)}</span>
+                    <span class="badge-pill">${esc(whenLabel)}</span>
                 </div>
                 ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
                 ${addressRow(ev.address)}
@@ -2025,8 +2033,8 @@
         today.setHours(0, 0, 0, 0);
         const upcoming = state.calendarEvents
             .filter((ev) => ev.event_type === "gathering" && ev.event_date_iso)
-            .map((ev) => ({ ev, start: new Date(`${ev.event_date_iso}T00:00:00`) }))
-            .filter(({ start }) => start >= today)
+            .map((ev) => ({ ev, start: nextOccurrence(ev, today) }))
+            .filter(({ start }) => start && start >= today)
             .sort((a, b) => a.start - b.start);
 
         if (upcoming.length === 0) {
@@ -2050,7 +2058,9 @@
     }
 
     function gatheringCardHtml(ev, start, today) {
-        const dateLabel = start.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+        const dateLabel = ev.repeats_weekly
+            ? `Every ${start.toLocaleDateString(undefined, { weekday: "long" })}`
+            : start.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
         const days = Math.round((start - today) / 86400000);
         const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
         const rsvps = ev.rsvps || [];
@@ -2229,6 +2239,32 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 
+    // Weekly recurrence -- no separate rows per occurrence, just one event
+    // that virtually repeats on the same weekday from its start date on.
+    function eventOccursOn(ev, cellDate) {
+        if (!ev.event_date_iso) return false;
+        const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+        if (ev.repeats_weekly) {
+            return cellDate >= anchor && cellDate.getDay() === anchor.getDay();
+        }
+        return toIsoDate(cellDate) === ev.event_date_iso;
+    }
+
+    // Next date (>= fromDate) this event actually falls on -- the anchor
+    // date itself for a one-off event, or the next matching weekday for a
+    // repeating one. Returns null if a one-off event's date has passed.
+    function nextOccurrence(ev, fromDate) {
+        if (!ev.event_date_iso) return null;
+        const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+        if (!ev.repeats_weekly) return anchor;
+        if (anchor >= fromDate) return anchor;
+        const daysBehind = Math.round((fromDate - anchor) / 86400000);
+        const weeksToAdd = Math.ceil(daysBehind / 7);
+        const next = new Date(anchor);
+        next.setDate(next.getDate() + weeksToAdd * 7);
+        return next;
+    }
+
     function changeCalendarMonth(delta) {
         renderCalendarGrid(); // ensures the year/month vars are initialized
         calendarViewMonth += delta;
@@ -2257,12 +2293,6 @@
         const grid = document.getElementById("calendarGrid");
         if (!grid) return;
 
-        const eventsByDate = {};
-        state.calendarEvents.forEach((ev) => {
-            if (!ev.event_date_iso) return;
-            (eventsByDate[ev.event_date_iso] ||= []).push(ev);
-        });
-
         const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
         const startWeekday = firstOfMonth.getDay();
         const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
@@ -2284,7 +2314,8 @@
                 cellDate = new Date(calendarViewYear, calendarViewMonth, dayOffset + 1);
                 otherMonth = false;
             }
-            cells.push({ cellDate, otherMonth, isToday: cellDate.getTime() === today.getTime(), dayEvents: eventsByDate[toIsoDate(cellDate)] || [] });
+            const dayEvents = state.calendarEvents.filter((ev) => eventOccursOn(ev, cellDate));
+            cells.push({ cellDate, otherMonth, isToday: cellDate.getTime() === today.getTime(), dayEvents });
         }
         // Trim a trailing week that's entirely next-month padding.
         while (cells.length > 35 && cells.slice(-7).every((c) => c.otherMonth)) {
@@ -2332,9 +2363,13 @@
         const isUrgent = ev.color && ev.color.toLowerCase() === "red";
         document.getElementById("eventDetailsTitle").innerHTML = `${esc(ev.title)} ${isUrgent ? '<span class="urgent-badge">Mandatory</span>' : ""}`;
 
-        const dateLabel = ev.event_date_iso
-            ? new Date(`${ev.event_date_iso}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
-            : "";
+        let dateLabel = "";
+        if (ev.event_date_iso) {
+            const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+            dateLabel = ev.repeats_weekly
+                ? `Every ${anchor.toLocaleDateString(undefined, { weekday: "long" })} (since ${anchor.toLocaleDateString(undefined, { month: "long", day: "numeric" })})`
+                : anchor.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        }
         document.getElementById("eventDetailsDate").textContent = [dateLabel, ev.event_date || ""].filter(Boolean).join(" • ");
 
         const descEl = document.getElementById("eventDetailsDesc");
@@ -2377,6 +2412,7 @@
             document.getElementById("cevTitle").value = ev.title || "";
             document.getElementById("cevType").value = ev.event_type || "meeting";
             document.getElementById("cevDate").value = ev.event_date_iso || "";
+            document.getElementById("cevRepeats").checked = !!ev.repeats_weekly;
             document.getElementById("cevTimeLabel").value = ev.event_date || "";
             document.getElementById("cevDesc").value = ev.description || "";
             document.getElementById("cevAddress").value = ev.address || "";
@@ -2388,6 +2424,7 @@
             document.getElementById("cevTitle").value = "";
             document.getElementById("cevType").value = "meeting";
             document.getElementById("cevDate").value = "";
+            document.getElementById("cevRepeats").checked = false;
             document.getElementById("cevTimeLabel").value = "";
             document.getElementById("cevDesc").value = "";
             document.getElementById("cevAddress").value = "";
@@ -2404,6 +2441,7 @@
             title: document.getElementById("cevTitle").value,
             event_type: document.getElementById("cevType").value,
             event_date_iso: document.getElementById("cevDate").value || null,
+            repeats_weekly: document.getElementById("cevRepeats").checked,
             event_date: document.getElementById("cevTimeLabel").value,
             description: document.getElementById("cevDesc").value,
             address: document.getElementById("cevAddress").value,
