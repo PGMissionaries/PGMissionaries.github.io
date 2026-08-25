@@ -714,6 +714,86 @@
             border-color: var(--primary);
         }
 
+        /* Calendar month view */
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .calendar-nav h3 { margin: 0; font-size: 1.1rem; color: var(--text-main); }
+        .calendar-nav-arrow {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .calendar-nav-arrow:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+        .calendar-weekdays span {
+            text-align: center;
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .calendar-day {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 64px;
+            min-width: 0;
+            padding: 3px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .calendar-day.other-month { background: transparent; border-color: transparent; opacity: 0.4; }
+        .calendar-day.today { border: 2px solid var(--primary); background: var(--primary-light); padding: 2px; }
+        .calendar-day-num { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); padding: 2px 2px 0; }
+        .calendar-day.today .calendar-day-num { color: var(--primary); }
+        .calendar-day-events { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .event-chip {
+            background: var(--bg-card);
+            color: var(--primary);
+            border: none;
+            border-radius: 5px;
+            padding: 2px 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            min-width: 0;
+            display: block;
+        }
+        .event-chip:hover { background: var(--primary); color: #fff; }
+        .event-chip.event-chip-urgent { background: var(--danger); color: #fff; }
+        .event-chip.event-chip-urgent:hover { background: #e6394a; }
+
         /* Resource Link Styling */
         .resource-link {
             display: block;
@@ -945,9 +1025,29 @@
         <div id="calendar" class="tab-content">
             <h2>Zone Calendar</h2>
             <div class="admin-controls" style="margin-bottom: 20px;">
-                <button class="btn" onclick="addCalendarEvent()">+ Add Event</button>
+                <button class="btn" onclick="openCalendarEventModal()">+ Add Event</button>
             </div>
-            <div id="calendarList" class="grid"></div>
+
+            <div class="card">
+                <div class="calendar-nav">
+                    <button class="calendar-nav-arrow" onclick="changeCalendarMonth(-1)" aria-label="Previous month">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </button>
+                    <div style="text-align:center;">
+                        <h3 id="calendarMonthLabel" style="margin-bottom:0;"></h3>
+                        <button class="btn btn-outline btn-sm" onclick="goToCurrentMonth()" style="margin-top:6px;">Today</button>
+                    </div>
+                    <button class="calendar-nav-arrow" onclick="changeCalendarMonth(1)" aria-label="Next month">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+
+            <div id="calendarUnscheduled"></div>
         </div>
 
         <!-- Service Opportunities Tab -->
@@ -1073,6 +1173,67 @@
             <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn" onclick="saveLeader()">Save Leader</button>
                 <button class="btn btn-outline" onclick="closeLeaderModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal (view an event -- shown when a calendar chip is tapped) -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <input type="hidden" id="eventDetailsId">
+            <h2 id="eventDetailsTitle" style="color: var(--text-main); margin-top:0;"></h2>
+            <p id="eventDetailsDate" style="color: var(--primary); font-weight: 800; margin-top: -8px;"></p>
+            <p id="eventDetailsDesc" style="color: var(--text-muted);"></p>
+            <div id="eventDetailsAddress"></div>
+            <div id="eventDetailsLink"></div>
+
+            <div style="margin-top: 15px; background: var(--secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong id="eventDetailsRsvpCount" style="color: var(--text-main); font-size: 0.95rem;"></strong>
+                    <button class="btn btn-outline btn-sm" onclick="addRsvp(document.getElementById('eventDetailsId').value)">+ RSVP</button>
+                </div>
+                <div id="eventDetailsRsvpList" style="color: var(--text-muted);"></div>
+            </div>
+
+            <div class="admin-controls" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-outline" style="flex:1;" onclick="editEventFromDetails()">Edit</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="deleteEventFromDetails()">Delete</button>
+            </div>
+            <button class="btn btn-outline btn-block" style="margin-top: 10px;" onclick="closeEventDetailsModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Calendar Event Modal -->
+    <div id="calendarEventModal" class="modal">
+        <div class="modal-content">
+            <h2 id="calendarEventModalTitle" style="color: var(--text-main); margin-top:0;">Add Event</h2>
+            <input type="hidden" id="cevId">
+
+            <label>Title</label>
+            <input type="text" id="cevTitle" placeholder="e.g. Zone Conference">
+
+            <label>Date</label>
+            <input type="date" id="cevDate">
+            <p class="field-hint">Leave blank for a recurring/no-fixed-date event -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
+
+            <label>Time / Label</label>
+            <input type="text" id="cevTimeLabel" placeholder="e.g. 11:00am-3:00pm, or 'Every Friday'">
+
+            <label>Description</label>
+            <input type="text" id="cevDesc" placeholder="Details...">
+
+            <label>Address</label>
+            <input type="text" id="cevAddress" placeholder="Optional">
+
+            <label>Link</label>
+            <input type="text" id="cevLink" placeholder="Optional, e.g. a Zoom or signup link">
+
+            <label>Color</label>
+            <input type="text" id="cevColor" placeholder="Type 'red' for Mandatory/Urgent, or leave blank">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveCalendarEvent()">Save Event</button>
+                <button class="btn btn-outline" onclick="closeCalendarEventModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -1611,7 +1772,8 @@
         renderStartingSoonInto("startingSoonMissionariesList");
         renderLeadership();
         renderGeneralNotes();
-        renderCalendar();
+        renderCalendarGrid();
+        renderUnscheduledEvents();
         renderSites();
         renderGatherings();
         renderResources();
@@ -1827,57 +1989,199 @@
         await db.from("general_notes").update({ content_html: html }).eq("id", id);
     }
 
-    // Calendar
-    function renderCalendar() {
-        const el = document.getElementById("calendarList");
-        el.innerHTML = "";
-        state.calendarEvents.forEach((ev) => {
-            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
-            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
-            const borderStyle = ev.color ? `border-left-color: ${esc(ev.color)};` : "";
-            const rsvps = ev.rsvps || [];
-            const rsvpHtml = rsvps.length > 0
-                ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}')">&times;</span></span>`).join("")
-                : "None yet.";
+    // Calendar -- month grid with event titles on their day, tap for details
+    const MONTH_LABELS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    let calendarViewYear, calendarViewMonth; // 0-11
 
-            el.innerHTML += `
-                <div class="card" style="${borderStyle}">
-                    <h3 style="color:var(--primary);">${esc(ev.title)} ${badge}</h3>
-                    <p style="margin-bottom: 5px;"><strong style="color:var(--text-main);">Date:</strong> ${esc(ev.event_date)}</p>
-                    <p style="color:var(--text-muted); margin-top:0;">${esc(ev.description)}</p>
-                    ${addressRow(ev.address)}
-                    ${linkRow(ev.link)}
-
-                    <div style="margin-top: 15px; background: var(--secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="color: var(--text-main); font-size: 0.95rem;">RSVPs (${rsvps.length})</strong>
-                            <button class="btn btn-outline btn-sm" onclick="addRsvp('${ev.id}')">+ RSVP</button>
-                        </div>
-                        <div style="color: var(--text-muted);">${rsvpHtml}</div>
-                    </div>
-
-                    <div class="admin-controls" style="margin-top: 15px;">
-                        <button class="btn btn-danger" onclick="deleteEvent('${ev.id}')">Delete Event</button>
-                    </div>
-                </div>`;
-        });
+    function toIsoDate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 
-    async function addCalendarEvent() {
-        const title = prompt("Event Title:");
-        if (!title) return;
-        const date = prompt("Event Date (e.g., Oct 24):");
-        const desc = prompt("Event Description:");
-        const address = prompt("Event Address (optional):");
-        const link = prompt("Event Link (optional, e.g. a signup form or map link):");
-        const color = prompt("Event Color (type 'red' for Mandatory/Urgent, or leave blank):", "");
-        await db.from("calendar_events").insert({ title, event_date: date, description: desc, address, link, color });
+    function changeCalendarMonth(delta) {
+        renderCalendarGrid(); // ensures the year/month vars are initialized
+        calendarViewMonth += delta;
+        if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+        if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+        renderCalendarGrid();
+    }
+
+    function goToCurrentMonth() {
+        const now = new Date();
+        calendarViewYear = now.getFullYear();
+        calendarViewMonth = now.getMonth();
+        renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+        if (calendarViewYear === undefined) {
+            const now = new Date();
+            calendarViewYear = now.getFullYear();
+            calendarViewMonth = now.getMonth();
+        }
+
+        const label = document.getElementById("calendarMonthLabel");
+        if (label) label.textContent = `${MONTH_LABELS[calendarViewMonth]} ${calendarViewYear}`;
+
+        const grid = document.getElementById("calendarGrid");
+        if (!grid) return;
+
+        const eventsByDate = {};
+        state.calendarEvents.forEach((ev) => {
+            if (!ev.event_date_iso) return;
+            (eventsByDate[ev.event_date_iso] ||= []).push(ev);
+        });
+
+        const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
+        const startWeekday = firstOfMonth.getDay();
+        const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(calendarViewYear, calendarViewMonth, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let cells = [];
+        for (let i = 0; i < 42; i++) {
+            const dayOffset = i - startWeekday;
+            let cellDate, otherMonth;
+            if (dayOffset < 0) {
+                cellDate = new Date(calendarViewYear, calendarViewMonth - 1, daysInPrevMonth + dayOffset + 1);
+                otherMonth = true;
+            } else if (dayOffset >= daysInMonth) {
+                cellDate = new Date(calendarViewYear, calendarViewMonth + 1, dayOffset - daysInMonth + 1);
+                otherMonth = true;
+            } else {
+                cellDate = new Date(calendarViewYear, calendarViewMonth, dayOffset + 1);
+                otherMonth = false;
+            }
+            cells.push({ cellDate, otherMonth, isToday: cellDate.getTime() === today.getTime(), dayEvents: eventsByDate[toIsoDate(cellDate)] || [] });
+        }
+        // Trim a trailing week that's entirely next-month padding.
+        while (cells.length > 35 && cells.slice(-7).every((c) => c.otherMonth)) {
+            cells = cells.slice(0, -7);
+        }
+
+        grid.innerHTML = cells.map(({ cellDate, otherMonth, isToday, dayEvents }) => {
+            const chips = dayEvents.map((ev) => {
+                const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+                return `<button class="event-chip${isUrgent ? " event-chip-urgent" : ""}" onclick="openEventDetailsModal('${ev.id}')" title="${esc(ev.title)}">${esc(ev.title)}</button>`;
+            }).join("");
+            return `
+                <div class="calendar-day${otherMonth ? " other-month" : ""}${isToday ? " today" : ""}">
+                    <span class="calendar-day-num">${cellDate.getDate()}</span>
+                    <div class="calendar-day-events">${chips}</div>
+                </div>`;
+        }).join("");
+    }
+
+    function renderUnscheduledEvents() {
+        const el = document.getElementById("calendarUnscheduled");
+        if (!el) return;
+        const unscheduled = state.calendarEvents.filter((ev) => !ev.event_date_iso);
+        if (unscheduled.length === 0) { el.innerHTML = ""; return; }
+        el.innerHTML = `<h3 style="margin: 24px 0 12px;">Other Events</h3>` + unscheduled.map((ev) => {
+            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+            return `
+                <div class="data-row" style="cursor:pointer;" onclick="openEventDetailsModal('${ev.id}')">
+                    <div class="data-row-head">
+                        <h4>${esc(ev.title)} ${badge}</h4>
+                        ${ev.event_date ? `<span class="badge-pill">${esc(ev.event_date)}</span>` : ""}
+                    </div>
+                    ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
+                </div>`;
+        }).join("");
+    }
+
+    // Event details modal (tap a chip or an "Other Events" row)
+    function openEventDetailsModal(id) {
+        const ev = state.calendarEvents.find((x) => x.id === id);
+        if (!ev) return;
+        document.getElementById("eventDetailsId").value = id;
+        const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+        document.getElementById("eventDetailsTitle").innerHTML = `${esc(ev.title)} ${isUrgent ? '<span class="urgent-badge">Mandatory</span>' : ""}`;
+
+        const dateLabel = ev.event_date_iso
+            ? new Date(`${ev.event_date_iso}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+            : "";
+        document.getElementById("eventDetailsDate").textContent = [dateLabel, ev.event_date || ""].filter(Boolean).join(" • ");
+
+        const descEl = document.getElementById("eventDetailsDesc");
+        descEl.textContent = ev.description || "";
+        descEl.style.display = ev.description ? "block" : "none";
+
+        document.getElementById("eventDetailsAddress").innerHTML = addressRow(ev.address);
+        document.getElementById("eventDetailsLink").innerHTML = linkRow(ev.link);
+
+        const rsvps = ev.rsvps || [];
+        document.getElementById("eventDetailsRsvpCount").textContent = `RSVPs (${rsvps.length})`;
+        document.getElementById("eventDetailsRsvpList").innerHTML = rsvps.length > 0
+            ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}', '${ev.id}')">&times;</span></span>`).join("")
+            : "None yet.";
+
+        document.getElementById("eventDetailsModal").style.display = "flex";
+    }
+    function closeEventDetailsModal() { document.getElementById("eventDetailsModal").style.display = "none"; }
+
+    function editEventFromDetails() {
+        const id = document.getElementById("eventDetailsId").value;
+        closeEventDetailsModal();
+        openCalendarEventModal(id);
+    }
+
+    async function deleteEventFromDetails() {
+        const id = document.getElementById("eventDetailsId").value;
+        if (!confirm("Delete this event?")) return;
+        await db.from("calendar_events").delete().eq("id", id);
+        closeEventDetailsModal();
         await loadAll();
     }
 
-    async function deleteEvent(id) {
-        if (!confirm("Delete this event?")) return;
-        await db.from("calendar_events").delete().eq("id", id);
+    // Add/Edit event modal
+    function openCalendarEventModal(id = null) {
+        if (id) {
+            const ev = state.calendarEvents.find((x) => x.id === id);
+            document.getElementById("calendarEventModalTitle").innerText = "Edit Event";
+            document.getElementById("cevId").value = ev.id;
+            document.getElementById("cevTitle").value = ev.title || "";
+            document.getElementById("cevDate").value = ev.event_date_iso || "";
+            document.getElementById("cevTimeLabel").value = ev.event_date || "";
+            document.getElementById("cevDesc").value = ev.description || "";
+            document.getElementById("cevAddress").value = ev.address || "";
+            document.getElementById("cevLink").value = ev.link || "";
+            document.getElementById("cevColor").value = ev.color || "";
+        } else {
+            document.getElementById("calendarEventModalTitle").innerText = "Add Event";
+            document.getElementById("cevId").value = "";
+            document.getElementById("cevTitle").value = "";
+            document.getElementById("cevDate").value = "";
+            document.getElementById("cevTimeLabel").value = "";
+            document.getElementById("cevDesc").value = "";
+            document.getElementById("cevAddress").value = "";
+            document.getElementById("cevLink").value = "";
+            document.getElementById("cevColor").value = "";
+        }
+        document.getElementById("calendarEventModal").style.display = "flex";
+    }
+    function closeCalendarEventModal() { document.getElementById("calendarEventModal").style.display = "none"; }
+
+    async function saveCalendarEvent() {
+        const id = document.getElementById("cevId").value;
+        const payload = {
+            title: document.getElementById("cevTitle").value,
+            event_date_iso: document.getElementById("cevDate").value || null,
+            event_date: document.getElementById("cevTimeLabel").value,
+            description: document.getElementById("cevDesc").value,
+            address: document.getElementById("cevAddress").value,
+            link: document.getElementById("cevLink").value,
+            color: document.getElementById("cevColor").value
+        };
+        let error;
+        if (id) {
+            ({ error } = await db.from("calendar_events").update(payload).eq("id", id));
+        } else {
+            ({ error } = await db.from("calendar_events").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeCalendarEventModal();
         await loadAll();
     }
 
@@ -1892,12 +2196,14 @@
         const { error } = await db.from("event_rsvps").insert({ event_id: eventId, missionary_id: match.id });
         if (error && !error.message.includes("duplicate")) alert(error.message);
         await loadAll();
+        if (document.getElementById("eventDetailsModal").style.display === "flex") openEventDetailsModal(eventId);
     }
 
-    async function removeRsvp(rsvpId) {
+    async function removeRsvp(rsvpId, eventId) {
         if (!confirm("Are you sure you want to remove this RSVP?")) return;
         await db.from("event_rsvps").delete().eq("id", rsvpId);
         await loadAll();
+        if (eventId && document.getElementById("eventDetailsModal").style.display === "flex") openEventDetailsModal(eventId);
     }
 
     // Service sites
